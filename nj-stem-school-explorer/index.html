@@ -1,115 +1,118 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>NJ School Explorer | Interactive New Jersey Public School Map</title>
-<meta name="description" content="Explore New Jersey municipalities and public schools on a real interactive map. Search a town, click a school, and view its public directory information." />
-<meta name="theme-color" content="#0d2946" />
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzX6D0L0YOKpO39E2T2Kgy6Pjs=" crossorigin=""/>
-<style>
-:root{--ink:#1a2f48;--muted:#677991;--navy:#0d2946;--aqua:#00b4a5;--bg:#f5f9fc;--border:#dfe8ef;--shadow:0 10px 36px rgba(18,41,72,.12)}
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
-button,input{font:inherit}button{cursor:pointer}#map{position:absolute;inset:0;background:#eaf3f5;z-index:0}
-.header{position:absolute;z-index:700;top:20px;left:20px;right:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;pointer-events:none}
-.brand{display:flex;align-items:center;gap:11px;background:white;border:1px solid #e2eaf1;border-radius:14px;box-shadow:var(--shadow);padding:12px 16px;pointer-events:auto}
-.brandmark{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--navy);color:white;font-weight:850;font-size:15px}
-.brandtitle{font-weight:800;font-size:16px;letter-spacing:-.03em}.brandsub{font-size:11px;color:var(--muted);margin-top:2px;font-weight:550}
-.searchbox{background:white;border:1px solid #e2eaf1;box-shadow:var(--shadow);border-radius:14px;padding:9px;width:290px;pointer-events:auto;position:relative}
-.searchmain{display:flex;align-items:center;gap:9px;padding:2px 9px}.searchmain svg{width:18px;height:18px;color:#8394a6;flex:none}.searchmain input{height:34px;min-width:0;flex:1;border:0;outline:0;font-size:14px;color:var(--ink);background:transparent}
-#matches{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);max-height:320px;overflow-y:auto;padding:6px}
-#matches button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 12px;width:100%;background:#fff;border:0;border-radius:8px;text-align:left;color:var(--ink)}#matches button:hover,#matches button:focus{background:#ebf6f5;outline:0}#matches small{color:var(--muted)}
-.intro{position:absolute;left:22px;bottom:30px;z-index:650;width:min(365px,calc(100% - 44px));padding:17px 19px;border:1px solid #e2eaf1;border-radius:16px;background:rgba(255,255,255,.97);box-shadow:var(--shadow);pointer-events:none;transition:opacity .2s}
-.intro .eyebrow,.eyebrow{font-size:10px;color:#27827e;font-weight:850;letter-spacing:.14em;text-transform:uppercase}.intro h1{font-size:27px;line-height:1.15;letter-spacing:-.04em;margin:6px 0 7px}.intro p{margin:0;color:#607184;font-size:13px;line-height:1.6}.steps{display:flex;align-items:center;gap:9px;margin-top:12px;color:#304d68;font-size:12px;font-weight:750}.step{display:inline-flex;align-items:center;gap:5px}.step em{font-style:normal;border-radius:50%;background:#e1f2ef;color:#18776f;padding:3px 7px;font-size:11px}
-.panel{position:absolute;right:20px;top:92px;bottom:20px;width:min(373px,calc(100% - 40px));z-index:650;border:1px solid #e0e9ef;background:rgba(255,255,255,.98);border-radius:19px;box-shadow:var(--shadow);display:none;overflow:hidden;flex-direction:column}
-.panel.show{display:flex}.panelHead{padding:19px 20px 15px;border-bottom:1px solid var(--border)}.back{background:transparent;border:0;padding:0;color:#19746f;font-weight:750;font-size:12px;display:inline-flex;align-items:center;gap:5px;margin-bottom:16px}.headrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.panel h2{font-size:25px;line-height:1.1;letter-spacing:-.05em;margin:4px 0 8px}.panel h3{font-size:22px;line-height:1.2;letter-spacing:-.035em;margin:4px 0 5px}.subtle{font-size:12px;color:var(--muted);line-height:1.5}.schoolcount{display:inline-block;background:#e8f6f3;color:#116e62;padding:5px 9px;font-size:11px;font-weight:800;border-radius:99px;margin-top:12px}.panelScroll{overflow-y:auto;padding:13px 12px;flex:1}.schoolitem{width:100%;border:1px solid #e7edf2;background:white;border-radius:12px;display:flex;align-items:center;text-align:left;gap:11px;padding:13px;margin-bottom:7px;color:var(--ink)}.schoolitem:hover,.schoolitem.active{border-color:#86c9c0;background:#effaf8}.schoolicon{height:38px;width:38px;border-radius:10px;background:#e9f4f6;color:#156873;display:flex;justify-content:center;align-items:center;font-size:19px;flex:none}.schoolcopy{flex:1;min-width:0}.schoolname{font-weight:750;font-size:13px;line-height:1.33}.schooltype{font-size:11px;color:#718196;margin-top:4px}.arrow{font-size:22px;color:#a7b3c2;font-weight:200}
-.detailbody{padding:18px 20px 22px;overflow-y:auto;flex:1}.details{display:grid;grid-template-columns:1fr;gap:16px;margin:22px 0}.term{font-size:10px;color:#7b8ea1;text-transform:uppercase;letter-spacing:.09em;font-weight:850;margin-bottom:5px}.value{font-size:14px;color:#243e55;line-height:1.35;font-weight:600}.sep{border:0;border-top:1px solid #e4ecf2;margin:18px 0}.metricbox{background:#f4f8fb;border:1px solid #e4ecf1;border-radius:13px;padding:16px;margin-top:10px}.metricbox h4{margin:0 0 9px;font-size:14px}.pending{font-size:12px;font-weight:730;color:#697c90}.note{font-size:11px;line-height:1.6;color:#6f8093;margin-top:10px}.sourceLink{font-size:11px;color:#1c7b7b;text-decoration:none;word-wrap:break-word}.sourceLink:hover{text-decoration:underline}
-#status{position:absolute;bottom:20px;right:20px;z-index:710;background:white;border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow);padding:12px 16px;font-size:12px;font-weight:650;color:#526d7f;max-width:340px;display:none}#status.show{display:block}#retry{margin-left:8px;background:#ecf4f6;border:0;border-radius:6px;color:#20666f;font-size:11px;padding:6px 8px;font-weight:750}
-.leaflet-container{font:inherit}.leaflet-control-zoom{border:0!important;box-shadow:var(--shadow)!important;border-radius:12px!important;overflow:hidden}.leaflet-control-zoom a{border:0!important;color:var(--navy)!important}.leaflet-bottom.leaflet-left{bottom:7px;left:12px}.leaflet-control-attribution{font-size:10px!important}
-.leaflet-tooltip.townname{font-size:12px;font-weight:800;color:#113c50;background:white;border:1px solid #e3eff2;border-radius:7px;box-shadow:0 4px 14px #1c324a20}
-.school-pin{height:30px;width:30px;background:#fff;border-radius:50%;box-shadow:0 2px 8px #173b5660;border:2px solid #167f79;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s}.school-pin.focus{height:36px;width:36px;border:3px solid #087565;box-shadow:0 3px 12px #0d766458}
-@media(max-width:760px){.header{top:9px;left:9px;right:9px;gap:7px;flex-wrap:wrap}.brand{padding:9px;border-radius:11px}.brandmark{width:32px;height:32px;font-size:13px}.brandtitle{font-size:14px}.brandsub{font-size:10px}.searchbox{width:min(270px,50vw);padding:6px}.searchmain{padding:1px 4px}.searchmain input{font-size:12px}.panel{top:auto;left:9px;right:9px;bottom:9px;width:auto;height:49%;max-height:500px;border-radius:16px}.intro{left:10px;bottom:24px;width:min(340px,calc(100% - 20px))}.intro h1{font-size:23px}.intro p{font-size:12px}#status{bottom:15px;right:9px;max-width:300px}.leaflet-top.leaflet-left{top:100px}}
-</style></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#251c36">
+  <meta name="description" content="Explore shaded New Jersey municipalities, zoom into a town, and click public schools for directory information.">
+  <title>NJ STEM Atlas — Interactive New Jersey Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzX6D0L0YOKpO39E2T2Kgy6Pjs=" crossorigin="">
+  <style>
+    :root{--ink:#2a1837;--muted:#6e6478;--purple:#70278c;--purple2:#9c4db2;--white:#fff;--line:#e9e2ec;--shadow:0 16px 52px rgba(30,21,44,.19)}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#eae4e1;color:var(--ink)}
+    button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #b45ed2;outline-offset:2px}
+    #map{position:absolute;inset:0;background:#e6e9eb;z-index:0}
+    .top{position:absolute;z-index:700;top:18px;left:18px;right:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
+    .logo,.search{pointer-events:auto;border:1px solid #e8e0e8;background:rgba(255,255,255,.98);box-shadow:var(--shadow);border-radius:12px}
+    .logo{display:flex;align-items:center;gap:11px;padding:12px 16px;max-width:350px}
+    .logoMark{width:40px;height:40px;display:grid;place-items:center;background:#63267c;color:#fff;border-radius:10px;font-weight:900;font-size:15px;letter-spacing:-1px}
+    .logo strong{display:block;font-size:15px;line-height:1.2}.logo small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+    .search{width:min(360px,45vw);position:relative}.searchInner{display:flex;align-items:center;gap:8px;padding:8px 13px}.search svg{flex:none;width:18px;height:18px;color:#8d8393}
+    .search input{min-width:0;width:100%;height:31px;border:0;outline:0;background:transparent;font-size:13px}.suggest{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:350px;overflow:auto;background:#fff;border-radius:12px;border:1px solid #e9e1ee;box-shadow:var(--shadow);padding:5px}
+    .suggest button{display:block;width:100%;text-align:left;background:#fff;border:0;border-radius:8px;padding:10px 11px;font-size:13px;color:var(--ink)}.suggest button:hover{background:#f7eff9}.suggest small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+    .legend{position:absolute;z-index:660;right:20px;bottom:28px;width:310px;background:rgba(255,255,255,.98);box-shadow:var(--shadow);border:1px solid #e8e0e8;border-radius:12px;padding:16px 18px}
+    .legendHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.legend h3{font-size:15px;margin:0;line-height:1.4;letter-spacing:-.02em}.legend .year{font-size:10px;color:#6e477d;font-weight:800;background:#f3e8f7;padding:4px 7px;border-radius:5px}
+    .legend p{font-size:11px;line-height:1.5;margin:6px 0 12px;color:#7b6b82}.swatches{height:15px;background:linear-gradient(90deg,#f4edf8,#dfcbe9,#b58acc,#8e4fa9,#693080,#421856);border:1px solid #e4dae9;border-radius:3px}.ticks{display:flex;justify-content:space-between;color:#645b6c;font-size:10px;margin-top:6px}.legendFoot{font-size:10px;color:#817884;line-height:1.5;margin-top:12px}
+    .toast{position:absolute;z-index:900;left:50%;bottom:28px;transform:translateX(-50%);max-width:min(560px,92vw);border:1px solid #e6dce9;background:#fff;box-shadow:var(--shadow);border-radius:10px;padding:12px 16px;color:#584566;font-size:12px;line-height:1.5;display:none;text-align:center}
+    .toast.show{display:block}.toast button{margin-left:8px;border:0;border-radius:6px;padding:5px 8px;color:#693080;background:#f3e5f8;font-weight:700}
+    .help{position:absolute;z-index:660;left:20px;bottom:24px;max-width:360px;border:1px solid #e8e0e8;background:rgba(255,255,255,.97);border-radius:10px;box-shadow:var(--shadow);padding:13px 16px;font-size:12px;color:#594967}
+    .help b{display:block;font-size:13px;color:#3d224e;margin-bottom:4px}
+    .drawer{position:absolute;z-index:750;left:18px;top:105px;bottom:110px;width:min(352px,calc(100% - 36px));display:none;flex-direction:column;border-radius:14px;background:#fff;border:1px solid #e7dfeb;box-shadow:var(--shadow);overflow:hidden}.drawer.visible{display:flex}
+    .drawerHeader{padding:18px 19px;border-bottom:1px solid var(--line)}.smallCaps{font-size:10px;font-weight:850;letter-spacing:.12em;color:#7f3b96;text-transform:uppercase}.drawerHeader h2{font-size:23px;line-height:1.13;letter-spacing:-.04em;margin:8px 0 8px}.drawerHeader .county{font-size:12px;color:var(--muted)}
+    .back{border:0;background:transparent;color:#7e348f;font-size:12px;font-weight:800;padding:0;margin-bottom:13px;display:inline-block}
+    .drawerScroll{overflow:auto;flex:1;padding:13px}.statusChip{display:inline-block;font-size:11px;padding:6px 9px;border-radius:20px;background:#f3e9f6;color:#6a2e82;margin-top:10px;font-weight:700}
+    .school{border:1px solid var(--line);border-radius:9px;background:#fff;padding:12px;display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin-bottom:8px;color:var(--ink)}.school:hover{background:#fbf5fd;border-color:#c9aed7}.school .dot{width:24px;height:24px;display:grid;place-items:center;flex:none;border-radius:50%;background:#ead6f1;color:#773597;font-size:13px}.school strong{font-size:12px;line-height:1.3;display:block}.school small{font-size:11px;color:#7a7081;display:block;margin-top:4px}
+    .detail p{font-size:13px;line-height:1.6;color:#53475b}.label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8b8190;font-weight:800;margin:18px 0 4px}.val{font-size:13px;font-weight:680;color:#33213e;line-height:1.45}.pending{margin-top:17px;border:1px solid #e6d9ec;border-radius:10px;background:#f9f4fb;padding:14px;font-size:12px;line-height:1.6;color:#60526a}.pending strong{display:block;color:#502869;margin-bottom:3px}
+    .leaflet-control-zoom{border:0!important;border-radius:9px!important;box-shadow:var(--shadow)!important;overflow:hidden}.leaflet-control-zoom a{color:#6a2b80!important;border:0!important}.leaflet-control-attribution{font-size:10px!important}.leaflet-tooltip{border:1px solid #e5d8e9;border-radius:8px;padding:8px 10px;box-shadow:0 6px 18px #38234029;color:#361941;font-size:12px;font-weight:730}
+    .school-pin{display:grid;place-items:center;background:#fff;color:#68237d;width:29px;height:29px;border:2px solid #8a3ca6;box-shadow:0 2px 6px #3621454a;border-radius:50%;font-size:14px}.school-pin.active{width:36px;height:36px;border:3px solid #64227c;background:#f4e6fa}
+    @media(max-width:710px){.top{top:9px;left:9px;right:9px;gap:6px}.logo{padding:8px;border-radius:10px;gap:6px}.logoMark{width:30px;height:30px;border-radius:8px;font-size:11px}.logo strong{font-size:12px}.logo small{font-size:9px}.search{width:47vw}.searchInner{padding:5px 8px}.search input{font-size:11px}.legend{width:230px;right:8px;bottom:15px;padding:12px}.help{left:8px;bottom:15px;font-size:10px;width:150px;padding:10px}.help b{font-size:11px}.drawer{top:auto;bottom:8px;left:8px;right:8px;width:auto;height:55%;max-height:480px}.legend p{font-size:10px}.logo small{max-width:128px}}
+  </style>
+</head>
 <body>
-<div id="map" aria-label="Interactive map of New Jersey municipalities and public schools"></div>
-<div class="header"><div class="brand"><div class="brandmark">NJ</div><div><div class="brandtitle">NJ School Explorer</div><div class="brandsub">Interactive STEM research map</div></div></div>
-<div class="searchbox"><div class="searchmain"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m16 16 5 5"/></svg><input id="townSearch" aria-label="Search any New Jersey town" placeholder="Search a New Jersey town…" autocomplete="off"></div><div id="matches" role="listbox" aria-label="Matching towns"></div></div></div>
-<div class="intro" id="intro"><div class="eyebrow">Explore New Jersey</div><h1>Your town.<br>Its schools.</h1><p>Explore a real New Jersey map. Choose a municipality, then click a public or charter school to see its available information.</p><div class="steps"><span class="step"><em>1</em> Select a town</span><span style="color:#a6b6c2">→</span><span class="step"><em>2</em> Choose a school</span></div></div>
-<aside class="panel" id="panel" aria-live="polite"><div class="panelHead" id="panelHead"></div><div class="panelScroll" id="panelScroll"></div></aside>
-<div id="status" role="status"></div>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-(()=>{
-'use strict';
-const BOUNDS=[[38.79,-75.67],[41.40,-73.85]];
-const CITY_GIS='https://maps.nj.gov/arcgis/rest/services/Framework/Government_Boundaries/MapServer/2';
-const SCHOOL_NJ_GIS='https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/ArcGIS/rest/services/School_Point_Locations_of_NJ/FeatureServer/0';
-const SCHOOL_NCES='https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1';
-const params=q=>new URLSearchParams(q).toString();
-const $=id=>document.getElementById(id);
-let map,townGeo=null,townLayer=null,selected=null,selectedLayer=null,towns=[],schools=[],pinGroup=null,currentPin=null,loading=0,sourceYear='2024–25';
-const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function status(message,error=false){let el=$('status');el.innerHTML=e(message)+(error?' <button id="retry" type="button">Retry</button>':'');el.classList.add('show');if(error)$('retry').onclick=loadTowns;}
-function hideStatus(){$('status').classList.remove('show')}
-function safeName(o){return o?.NAME||o?.MUN_LABEL||o?.GNIS_NAME||'Unnamed municipality'}
-function townTitle(f){let s=safeName(f.properties);return s.replace(/\s+(CITY|BOROUGH|TOWNSHIP|TOWN|VILLAGE)$/i,x=>' '+x.trim().toLowerCase().replace(/^./,c=>c.toUpperCase()));}
-function townCounty(f){return (f.properties.COUNTY||'New Jersey').replace(/\b\w/g,c=>c.toUpperCase());}
-function hideIntro(flag){$('intro').style.opacity=flag?'0':'1';$('intro').style.visibility=flag?'hidden':'visible';}
-function panelHead(html){$('panelHead').innerHTML=html;$('panel').classList.add('show');}
-async function requestJson(url,timeout=24000){const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),timeout);try{const response=await fetch(url,{mode:'cors',signal:ctl.signal});if(!response.ok)throw Error('Service unavailable ('+response.status+')');const data=await response.json();if(data.error)throw Error(data.error.message||'Map service error');return data;}finally{clearTimeout(timer)}}
-function styleTown(feat,sel=false){return{color:sel?'#007d76':'#5a90a1',weight:sel?2.8:1.05,fillColor:sel?'#5ac9b7':'#9ad1cf',fillOpacity:sel?.27:.17,opacity:sel?1:.73}}
-async function loadTowns(){status('Loading official New Jersey town boundaries…');try{
- const query=CITY_GIS+'/query?'+params({where:'1=1',outFields:'NAME,MUN_LABEL,COUNTY,MUN_CODE',returnGeometry:'true',outSR:'4326',maxAllowableOffset:'.0008',geometryPrecision:'5',f:'geojson'});
- const geo=await requestJson(query,30000);
- if(geo.type!=='FeatureCollection'||!geo.features?.length)throw Error('Town records were not returned.');
- townGeo=geo;towns=geo.features.filter(f=>f.geometry).sort((a,b)=>townTitle(a).localeCompare(townTitle(b)));
- if(townLayer)map.removeLayer(townLayer);
- townLayer=L.geoJSON(geo,{style:f=>styleTown(f),onEachFeature:(feat,ly)=>{ly.bindTooltip(townTitle(feat),{sticky:true,className:'townname'});ly.on('mouseover',()=>{if(ly!==selectedLayer)ly.setStyle({weight:2,color:'#0a6d71',fillOpacity:.32})});ly.on('mouseout',()=>{if(ly!==selectedLayer)townLayer.resetStyle(ly)});ly.on('click',()=>openTown(feat,ly));}}).addTo(map);
- hideStatus();
- }catch(err){status('Town boundary service could not be reached. Check your connection and retry.',true);console.error('Boundary load error',err);}}
-function findLayerForFeature(feature){let best=null;townLayer?.eachLayer(ly=>{if(!best&&ly.feature?.properties?.MUN_CODE===feature.properties.MUN_CODE&&ly.feature?.properties?.COUNTY===feature.properties.COUNTY)best=ly});return best;}
-function normalizeSchool(feat,which){const p=feat.properties||{};const coords=feat.geometry?.coordinates;if(!coords||!isFinite(coords[0])||!isFinite(coords[1]))return null;
-if(which==='nj'){return{lat:coords[1],lon:coords[0],name:p.SCHOOL||p.SCHOOLNAME||'Unnamed school',district:p.DIST_NAME||'Not listed',type:p.CATEGORY===1?'Charter school':'Public school',address:[p.ADDRESS1,p.ADDRESS2,p.CITY,'NJ',p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',county:p.COUNTY||'',id:[p.COUNTYCODE,p.DIST_CODE,p.SCHOOLCODE].map(x=>String(x||'').padStart(x===p.SCHOOLCODE?3:x===p.COUNTYCODE?2:4,'0')).join(''),source:'NJ Office of GIS / NJDOE school locations',year:'2022–23'};}
-return{lat:coords[1],lon:coords[0],name:p.SCH_NAME||p.NAME||p.SCHOOLNAME||'Unnamed school',district:p.LEA_NAME||p.LEANAME||p.DIST_NAME||'Not listed',type:/^(yes|1|true)$/i.test(String(p.CHARTER_TEXT||''))?'Charter school':'Public school',address:[p.LSTREET1||p.STREET,p.LSTREET2,p.LCITY||p.CITY,p.LSTATE||p.STATE||'NJ',p.LZIP||p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',county:p.NMCNTY||'',id:p.NCESSCH||'',grades:p.GSLO&&p.GSHI?p.GSLO+'–'+p.GSHI:'',source:'NCES 2024–25 public-school administrative data',year:'2024–25'};}
-function inRing(lat,lon,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if(((a[1]>lat)!==(b[1]>lat))&&(lon<(b[0]-a[0])*(lat-a[1])/(b[1]-a[1])+a[0]))inside=!inside;}return inside;}
-function within(lat,lon,geometry){if(!geometry)return false;const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.type==='MultiPolygon'?geometry.coordinates:[];return polygons.some(rings=>rings[0]&&inRing(lat,lon,rings[0])&&!rings.slice(1).some(r=>inRing(lat,lon,r)));}
-function getBoundingBox(feature){return L.geoJSON(feature).getBounds()}
-async function queryTownSchools(feature){let box=getBoundingBox(feature);let b=box.toBBoxString().split(',').map(Number);const geom=[b[0],b[1],b[2],b[3]].join(',');
-const q={where:'CATEGORY IN (1,3)',geometry:geom,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'*',returnGeometry:'true',outSR:'4326',f:'geojson'};
-let datas=[],lastError=null;
-for(const [service,typ] of [[SCHOOL_NCES,'nces'],[SCHOOL_NJ_GIS,'nj']]){
- try{const x={...q,where:typ==='nj'?q.where:"LSTATE='NJ'"};const response=await requestJson(service+'/query?'+params(x),13000);
- if(response.type!=='FeatureCollection'||!Array.isArray(response.features))throw Error('Invalid school listing');
- datas=response.features.map(f=>normalizeSchool(f,typ)).filter(s=>s&&within(s.lat,s.lon,feature.geometry));sourceYear=typ==='nj'?'2022–23':'2024–25';if(datas.length)break;
- }catch(err){console.warn('Source did not load',service,err);lastError=err;}
-}
-if(!datas.length&&lastError)throw lastError;
-return Array.from(new Map(datas.map(s=>[s.name.toLowerCase()+'|'+s.address.toLowerCase(),s])).values()).sort((a,b)=>a.name.localeCompare(b.name));
-}
-function schoolMarker(iconFocused=false){return L.divIcon({className:'',html:`<div class="school-pin${iconFocused?' focus':''}">🏫</div>`,iconSize:iconFocused?[36,36]:[30,30],iconAnchor:iconFocused?[18,18]:[15,15]});}
-function showPins(){if(pinGroup){map.removeLayer(pinGroup)}pinGroup=L.layerGroup().addTo(map);schools.forEach((s,i)=>{const marker=L.marker([s.lat,s.lon],{icon:schoolMarker(),title:s.name}).addTo(pinGroup);marker.bindTooltip(e(s.name),{direction:'top',offset:[0,-8]});marker.on('click',()=>showSchool(i,marker));s.marker=marker;});}
-async function openTown(feature,layer){const serial=++loading;selected=feature;if(selectedLayer&&townLayer)townLayer.resetStyle(selectedLayer);selectedLayer=layer||findLayerForFeature(feature);if(selectedLayer){selectedLayer.setStyle(styleTown(feature,true));selectedLayer.bringToFront()}
- map.fitBounds(getBoundingBox(feature).pad(.16),{animate:true,duration:.8,maxZoom:14});hideIntro(true);$('matches').style.display='none';$('townSearch').value='';
- panelHead(`<button class="back" id="backBtn">← All of New Jersey</button><div class="eyebrow">Town / municipality</div><h2>${e(townTitle(feature))}</h2><div class="subtle">${e(townCounty(feature))} County, New Jersey</div><span class="schoolcount" id="schoolCount">Finding schools…</span>`);$('backBtn').onclick=home;
- $('panelScroll').innerHTML='<div class="subtle" style="padding:14px 6px">Loading public and charter schools for this town…</div>';
- if(pinGroup){map.removeLayer(pinGroup);pinGroup=null}schools=[];
- try{const s=await queryTownSchools(feature);if(serial!==loading)return;schools=s;showPins();$('schoolCount').textContent=`${schools.length} schools found`;renderSchoolList();}
- catch(err){if(serial!==loading)return;console.error(err);$('schoolCount').textContent='Unable to load schools';$('panelScroll').innerHTML=`<div class="subtle" style="padding:12px 6px">School records are temporarily unavailable from the public map service. The selected town is still highlighted. <button id="trySchools" class="back" style="margin:8px 0">Try loading schools again →</button></div>`;$('trySchools').onclick=()=>openTown(feature,selectedLayer)} }
-function renderSchoolList(){if(!schools.length){$('panelScroll').innerHTML=`<p class="subtle" style="padding:12px 5px">No public or charter schools were found within this municipality in the available directory. Some students attend schools in neighboring towns or regional districts.</p>`;return}
-$('panelScroll').innerHTML=schools.map((s,i)=>`<button class="schoolitem" data-index="${i}"><span class="schoolicon">🏫</span><span class="schoolcopy"><div class="schoolname">${e(s.name)}</div><div class="schooltype">${e(s.type)} · ${e(s.district)}</div></span><span class="arrow">›</span></button>`).join('');$('panelScroll').querySelectorAll('button[data-index]').forEach(el=>el.onclick=()=>showSchool(Number(el.dataset.index),schools[Number(el.dataset.index)].marker));}
-function showSchool(index,marker){const s=schools[index];if(!s)return;if(currentPin&&currentPin!==marker)currentPin.setIcon(schoolMarker());currentPin=marker;marker?.setIcon(schoolMarker(true));map.panTo([s.lat,s.lon],{animate:true,duration:.45});
-const tag=s.source==='NJ Office of GIS / NJDOE school locations'?'NJGIS':'NCES';
-panelHead(`<button class="back" id="backBtn">← Schools in ${e(townTitle(selected))}</button><div class="eyebrow">School details</div><h3>${e(s.name)}</h3><div class="subtle">${e(s.type)} · ${e(townTitle(selected))}, New Jersey</div>`);$('backBtn').onclick=()=>{renderTownHeader();renderSchoolList();};
-$('panelScroll').innerHTML=`<div class="detailbody"><div class="details"><div><div class="term">School district</div><div class="value">${e(s.district)}</div></div><div><div class="term">Address</div><div class="value">${e(s.address||'Not reported')}</div></div>${s.phone?`<div><div class="term">Phone</div><div class="value">${e(s.phone)}</div></div>`:''}${s.grades?`<div><div class="term">Grades served</div><div class="value">${e(s.grades)}</div></div>`:''}<div><div class="term">School location source</div><div class="value">${e(tag)} · ${e(s.year)}</div></div></div><hr class="sep"><div class="eyebrow">Your STEM thesis</div><div class="metricbox"><h4>Advanced STEM participation</h4><div class="pending">Not linked to school performance data yet</div><div class="note">This view already uses real school locations and directory information. AP/IB mathematics, science participation and model estimates will appear here after verified NJDOE school-level data are matched to this school. No figures are made up.</div></div><div class="note">Schools are shown by physical location within the selected municipality. School districts can serve more than one town.</div><p style="margin-top:20px"><a class="sourceLink" href="${e(s.source.startsWith('NJ Office')?SCHOOL_NJ_GIS:SCHOOL_NCES)}" target="_blank" rel="noopener">View original school-location source ↗</a></p></div>`;
-}
-function renderTownHeader(){panelHead(`<button class="back" id="backBtn">← All of New Jersey</button><div class="eyebrow">Town / municipality</div><h2>${e(townTitle(selected))}</h2><div class="subtle">${e(townCounty(selected))} County, New Jersey</div><span class="schoolcount">${schools.length} schools found</span>`);$('backBtn').onclick=home;}
-function home(){++loading;if(selectedLayer&&townLayer)townLayer.resetStyle(selectedLayer);selectedLayer=null;selected=null;schools=[];if(pinGroup){map.removeLayer(pinGroup);pinGroup=null}currentPin=null;$('panel').classList.remove('show');hideIntro(false);map.fitBounds(BOUNDS,{padding:[35,35],animate:true});}
-function findMatches(needle){let q=needle.trim().toLowerCase();if(!q)return[];return towns.filter(f=>[safeName(f.properties),townCounty(f)].join(' ').toLowerCase().includes(q)).sort((a,b)=>{let a1=townTitle(a).toLowerCase().startsWith(q)?0:1,b1=townTitle(b).toLowerCase().startsWith(q)?0:1;return a1-b1||townTitle(a).localeCompare(townTitle(b))}).slice(0,9)}
-function paintMatches(){const found=findMatches($('townSearch').value),box=$('matches');box.style.display=found.length?'block':'none';box.innerHTML=found.map((x,i)=>`<button data-i="${i}"><strong>${e(townTitle(x))}</strong><small>${e(townCounty(x))} County</small></button>`).join('');box.querySelectorAll('button[data-i]').forEach(el=>el.onclick=()=>{const f=found[Number(el.dataset.i)];openTown(f,findLayerForFeature(f));});}
-function start(){if(typeof L==='undefined'){status('The map library could not load. Check your internet connection and reload the website.',true);return}
- map=L.map('map',{zoomControl:false,scrollWheelZoom:true,preferCanvas:true,minZoom:7,maxZoom:19}).setView([40.14,-74.51],8);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,maxNativeZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(map);
- L.control.zoom({position:'bottomleft'}).addTo(map);
- loadTowns();$('townSearch').addEventListener('input',paintMatches);$('townSearch').addEventListener('keydown',ev=>{if(ev.key==='Enter'){const f=findMatches(ev.target.value)[0];if(f){openTown(f,findLayerForFeature(f));ev.target.blur();}}if(ev.key==='Escape')$('matches').style.display='none'});document.addEventListener('click',ev=>{if(!ev.target.closest('.searchbox'))$('matches').style.display='none'});
-}
-start();
-})();
-</script></body></html>
+  <main id="map" aria-label="Interactive shaded map of New Jersey municipalities"></main>
+  <header class="top">
+    <div class="logo"><div class="logoMark">NJ</div><div><strong>New Jersey STEM Atlas</strong><small>Interactive municipality &amp; school map</small></div></div>
+    <div class="search"><div class="searchInner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg><input id="search" aria-label="Search town" placeholder="Search a New Jersey town…" autocomplete="off"></div><div id="suggest" class="suggest" role="listbox"></div></div>
+  </header>
+  <aside id="drawer" class="drawer" aria-live="polite"><div id="drawerHead" class="drawerHeader"></div><div id="drawerBody" class="drawerScroll"></div></aside>
+  <aside class="legend" aria-label="Map legend"><div class="legendHead"><h3 id="legendTitle">NJ population density</h3><span class="year" id="legendYear">2020</span></div><p id="legendDescription">People per square mile across New Jersey municipalities</p><div class="swatches" id="swatches"></div><div class="ticks"><span id="legendLow">Lower</span><span id="legendMid">Mid</span><span id="legendHigh">Higher</span></div><div class="legendFoot" id="legendFoot">Map context only · Not AP/IB results. Source: NJ Office of GIS. Click any municipality to see its schools.</div></aside>
+  <div class="help" id="help"><b>Explore New Jersey</b>Click a purple area → zoom into the town → select a school.</div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+  (()=>{
+    'use strict';
+    const $=id=>document.getElementById(id);
+    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const muniEndpoint='https://maps.nj.gov/arcgis/rest/services/Framework/Government_Boundaries/MapServer/2/query';
+    const muniFallback='https://cdn.jsdelivr.net/gh/njam-data/new-jersey-municipalities@main/data/new-jersey-municipalities-simplified-geojson.json';
+    const schoolSource='https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/ArcGIS/rest/services/School_Point_Locations_of_NJ/FeatureServer/0/query';
+    const ncesSource='https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1/query';
+    const P=['#f4edf8','#dfcbe9','#b58acc','#8e4fa9','#693080','#421856'];
+    const NJ_BOUNDS=[[38.9,-75.63],[41.41,-73.82]];
+    let map,polyLayer=null, features=[], currentFeature=null,currentLayer=null,schoolLayer=null,selectedSchools=[],selectedSchool=null,schoolMarkers=[],requestSeq=0,layerMode='density';
+    function showToast(msg,retry=null){$('toast').innerHTML=esc(msg)+(retry?'<button id="retry">Retry</button>':'');$('toast').classList.add('show');if(retry)$('retry').onclick=retry;}
+    function clearToast(){$('toast').classList.remove('show')}
+    function props(f){return f?.properties||{}}
+    function town(f){const p=props(f);return p.NAME||p.MUN_LABEL||p.MUN||p.name||p.municipality||'Unnamed municipality'}
+    function county(f){const p=props(f);return p.COUNTY||p.county||p.COUNTY_NAME||'New Jersey'}
+    function density(f){const p=props(f);let x=Number(p.POPDEN2020);return Number.isFinite(x)&&x>0?x:null}
+    function townBounds(f){return L.geoJSON(f).getBounds()}
+    function colorFor(f){if(layerMode==='county'){const n=String(county(f)).toUpperCase().split('').reduce((a,c)=>a+c.charCodeAt(0),0);return P[n%P.length];}
+      const v=density(f);if(v===null)return '#c7bacb';return v<500?P[0]:v<1500?P[1]:v<3000?P[2]:v<6000?P[3]:v<12000?P[4]:P[5];}
+    function style(f,active=false){return {color:active?'#33153d':'#fff',weight:active?3.2:.75,opacity:active?1:.76,fillColor:colorFor(f),fillOpacity:active?.91:.76};}
+    function setupLegend(){if(layerMode==='density'){$('legendTitle').textContent='Population density in NJ';$('legendYear').textContent='2020';$('legendDescription').textContent='People per square mile · municipal context';$('legendLow').textContent='0–500';$('legendMid').textContent='3,000';$('legendHigh').textContent='12,000+';$('legendFoot').textContent='Purple areas represent 2020 density, NOT AP/IB performance. Source: NJ Office of GIS.';}
+      else{$('legendTitle').textContent='New Jersey municipalities';$('legendYear').textContent='Reference';$('legendDescription').textContent='Purple shading distinguishes areas for exploration';$('legendLow').textContent='Town';$('legendMid').textContent='County groups';$('legendHigh').textContent='NJ';$('legendFoot').textContent='Reference colors only, NOT education statistics. Source: NJ municipal boundaries (njam-data / NJOGIS).';}}
+    async function fetchJSON(url,timeout=22000){const c=new AbortController(),id=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);const v=await r.json();if(v.error)throw Error(v.error.message||'GIS service error');return v;}finally{clearTimeout(id)}}
+    async function loadMunicipalities(){showToast('Loading New Jersey municipal boundaries…');const p=new URLSearchParams({where:'1=1',outFields:'NAME,MUN_LABEL,MUN,COUNTY,POPDEN2020,POP2020',returnGeometry:'true',outSR:'4326',geometryPrecision:'5',f:'geojson'});
+      let data;try{data=await fetchJSON(muniEndpoint+'?'+p,23000);if(!Array.isArray(data.features)||data.features.length<450)throw Error('Incomplete boundary data');layerMode='density';}
+      catch(e){console.warn('NJGIS unavailable, using geometry mirror',e);try{data=await fetchJSON(muniFallback,18000);if(!Array.isArray(data.features)||data.features.length<450)throw Error('Incomplete geometry mirror');layerMode='county';}catch(x){showToast('The town boundaries are temporarily unavailable. Check internet access, then retry.',loadMunicipalities);return;}}
+      features=data.features.filter(f=>f.geometry);setupLegend();if(polyLayer)map.removeLayer(polyLayer);
+      polyLayer=L.geoJSON({type:'FeatureCollection',features},{style:f=>style(f),onEachFeature:(f,layer)=>{
+        const d=density(f);layer.bindTooltip(`<b>${esc(town(f))}</b><br><span style="font-weight:400;color:#74647a">${esc(county(f))} County${layerMode==='density'&&d!==null?` · ${Math.round(d).toLocaleString()} / sq mi`:''}</span>`,{sticky:true,direction:'top'});
+        layer.on('mouseover',()=>{if(layer!==currentLayer){layer.setStyle({weight:2,color:'#4e1762',fillOpacity:.91});layer.bringToFront();}});
+        layer.on('mouseout',()=>{if(layer!==currentLayer)polyLayer.resetStyle(layer);});
+        layer.on('click',()=>selectTown(f,layer));}}).addTo(map);
+      clearToast();
+    }
+    function resetHome(){requestSeq++;currentFeature=null;if(currentLayer&&polyLayer)polyLayer.resetStyle(currentLayer);currentLayer=null;selectedSchools=[];selectedSchool=null;schoolMarkers=[];if(schoolLayer)schoolLayer.clearLayers();$('drawer').classList.remove('visible');$('help').style.display='block';$('search').value='';$('suggest').style.display='none';map.fitBounds(NJ_BOUNDS,{padding:[24,24],animate:true});}
+    function pointInRing(pt,ring){let inside=false;const x=pt[0],y=pt[1];for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
+    function inTown(pt,geo){if(!geo)return false;const polys=geo.type==='Polygon'?[geo.coordinates]:geo.type==='MultiPolygon'?geo.coordinates:[];return polys.some(r=>r[0]&&pointInRing(pt,r[0])&&!r.slice(1).some(h=>pointInRing(pt,h)));}
+    function schoolFrom(f,src){const p=f.properties||{};const coords=f.geometry?.coordinates;if(!Array.isArray(coords)||coords.length<2)return null;
+      if(src==='nj'){return {name:p.SCHOOLNAME||p.SCHOOL||'Unnamed school',district:p.DIST_NAME||'',address:[p.ADDRESS1,p.CITY,'NJ',p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',type:Number(p.CATEGORY)===1?'Charter':'Public',lat:coords[1],lon:coords[0],dataSource:'NJ Office of GIS school locations (last updated 2023)'};}
+      return {name:p.SCH_NAME||p.NAME||p.SCHOOLNAME||'Unnamed school',district:p.LEA_NAME||p.LEANAME||p.DIST_NAME||'',address:[p.LSTREET1||p.STREET,p.LCITY||p.CITY,'NJ',p.LZIP||p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',type:'Public',lat:coords[1],lon:coords[0],dataSource:'NCES school directory (2024–25)'};}
+    async function getSchools(f){const b=townBounds(f),bounds=b.toBBoxString();const args={geometry:bounds,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',returnGeometry:'true',outSR:'4326',outFields:'*',f:'geojson'};
+      let rows=[],last=null;for(const src of ['nces','nj']){try{const service=src==='nces'?ncesSource:schoolSource;const q=new URLSearchParams({...args,where:src==='nces'?"LSTATE='NJ'":"CATEGORY IN (1,3)"});const d=await fetchJSON(service+'?'+q,14500);if(!Array.isArray(d.features))throw Error('Invalid response');rows=d.features.map(a=>schoolFrom(a,src)).filter(s=>s&&inTown([s.lon,s.lat],f.geometry));if(rows.length)break;}catch(e){last=e;console.warn('School source not available',src,e)}}
+      if(!rows.length&&last)throw last;return [...new Map(rows.map(s=>[s.name.toLowerCase()+'|'+s.address.toLowerCase(),s])).values()].sort((a,b)=>a.name.localeCompare(b.name));}
+    function townHeader(){const d=density(currentFeature);$('drawerHead').innerHTML=`<button class="back" id="backHome">← All New Jersey</button><div class="smallCaps">Selected municipality</div><h2>${esc(town(currentFeature))}</h2><div class="county">${esc(county(currentFeature))} County, New Jersey</div>${layerMode==='density'&&d!==null?`<span class="statusChip">2020 density: ${Math.round(d).toLocaleString()} people / sq mi</span>`:''}<div class="statusChip" id="schoolCount">${selectedSchools.length?`${selectedSchools.length} school locations`:'Finding schools…'}</div>`;$('backHome').onclick=resetHome;}
+    function renderSchoolList(){townHeader();$('schoolCount').textContent=`${selectedSchools.length} school locations`;if(!selectedSchools.length){$('drawerBody').innerHTML='<p style="padding:6px;font-size:13px;color:#695b70;line-height:1.6">No public/charter school locations were found for this town in the available data. Some districts serve students across municipal borders.</p>';return;}
+      $('drawerBody').innerHTML=selectedSchools.map((s,i)=>`<button class="school" data-i="${i}"><span class="dot">●</span><span><strong>${esc(s.name)}</strong><small>${esc(s.type)} school${s.district?` · ${esc(s.district)}`:''}</small></span></button>`).join('');$('drawerBody').querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>showSchool(Number(el.dataset.i)));}
+    function showPins(){schoolLayer.clearLayers();schoolMarkers=selectedSchools.map((s,i)=>{const marker=L.marker([s.lat,s.lon],{icon:L.divIcon({className:'',html:'<div class="school-pin">🏫</div>',iconSize:[29,29],iconAnchor:[14,14]})});marker.bindTooltip(esc(s.name),{direction:'top',offset:[0,-12]});marker.on('click',()=>showSchool(i));marker.addTo(schoolLayer);return marker;});}
+    function showSchool(i){const s=selectedSchools[i];if(!s)return;selectedSchool=i;schoolMarkers.forEach((m,k)=>m.setIcon(L.divIcon({className:'',html:`<div class="school-pin ${k===i?'active':''}">🏫</div>`,iconSize:k===i?[36,36]:[29,29],iconAnchor:k===i?[18,18]:[14,14]})));
+      map.flyTo([s.lat,s.lon],Math.max(map.getZoom(),13),{duration:.6});$('drawerHead').innerHTML=`<button id="toTown" class="back">← ${esc(town(currentFeature))} schools</button><div class="smallCaps">School profile</div><h2>${esc(s.name)}</h2><div class="county">${esc(s.type)} school · ${esc(town(currentFeature))}</div>`;$('toTown').onclick=renderSchoolList;
+      $('drawerBody').innerHTML=`<div class="detail"><div class="label">School district</div><div class="val">${esc(s.district||'Not available')}</div><div class="label">Location</div><div class="val">${esc(s.address||'Not available')}</div>${s.phone?`<div class="label">Telephone</div><div class="val">${esc(s.phone)}</div>`:''}<div class="label">School information source</div><div class="val">${esc(s.dataSource)}</div><div class="pending"><strong>Advanced STEM participation</strong>AP/IB mathematics, science, and model predictions are not connected yet. This map shows real town boundaries and school locations; it does not invent student figures.</div><p>Schools are shown at their physical locations. A school district can serve several towns.</p></div>`;
+    }
+    async function selectTown(f,layer){const seq=++requestSeq;currentFeature=f;if(currentLayer&&polyLayer)polyLayer.resetStyle(currentLayer);currentLayer=layer||null;if(!currentLayer&&polyLayer)polyLayer.eachLayer(l=>{if(l.feature===f)currentLayer=l});if(currentLayer){currentLayer.setStyle(style(f,true));currentLayer.bringToFront()}
+      $('suggest').style.display='none';$('search').value='';$('help').style.display='none';$('drawer').classList.add('visible');selectedSchools=[];selectedSchool=null;if(schoolLayer)schoolLayer.clearLayers();townHeader();$('drawerBody').innerHTML='<p style="color:#75687b;font-size:12px;padding:12px">Loading public and charter schools inside this municipality…</p>';
+      map.flyToBounds(townBounds(f).pad(.28),{maxZoom:12.8,duration:.7,padding:[40,40]});try{const x=await getSchools(f);if(seq!==requestSeq)return;selectedSchools=x;showPins();renderSchoolList();}catch(e){if(seq!==requestSeq)return;$('drawerBody').innerHTML='<p style="font-size:12px;line-height:1.65;color:#6b5c72;padding:6px">The public school-location service did not respond. Town selection still works; you can retry the school list.</p><button class="school" id="retrySchools">Retry school locations ↻</button>';$('retrySchools').onclick=()=>selectTown(f,currentLayer);$('schoolCount').textContent='School data unavailable';}}
+    function matches(q){q=q.trim().toLowerCase();return q?features.filter(f=>(town(f)+' '+county(f)).toLowerCase().includes(q)).sort((a,b)=>{const av=town(a).toLowerCase().startsWith(q)?0:1,bv=town(b).toLowerCase().startsWith(q)?0:1;return av-bv||town(a).localeCompare(town(b))}).slice(0,9):[]}
+    function search(){const res=matches($('search').value);$('suggest').style.display=res.length?'block':'none';$('suggest').innerHTML=res.map((f,i)=>`<button data-i="${i}">${esc(town(f))}<small>${esc(county(f))} County</small></button>`).join('');$('suggest').querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{const f=res[Number(el.dataset.i)];selectTown(f);});}
+    function start(){if(typeof L==='undefined'){showToast('Map library unavailable. Check your internet connection and reload.');return;}
+      map=L.map('map',{zoomControl:false,preferCanvas:true,minZoom:6,maxZoom:18,scrollWheelZoom:true}).fitBounds(NJ_BOUNDS);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',crossOrigin:true}).addTo(map);
+      L.control.zoom({position:'bottomleft'}).addTo(map);schoolLayer=L.layerGroup().addTo(map);$('search').addEventListener('input',search);$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){const f=matches(e.target.value)[0];if(f)selectTown(f);}else if(e.key==='Escape')$('suggest').style.display='none'});document.addEventListener('pointerdown',e=>{if(!e.target.closest('.search'))$('suggest').style.display='none'});loadMunicipalities();}
+    start();
+  })();
+  </script>
+</body>
+</html>
