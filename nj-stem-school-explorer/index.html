@@ -1,782 +1,97 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#251c36">
-  <meta name="description" content="Explore shaded New Jersey municipalities, zoom into a town, and click public schools for directory information.">
-  <title>NJ STEM Atlas — Interactive New Jersey Map</title>
-  <!-- Leaflet map layout CSS is embedded to prevent broken maps when a CDN stylesheet is blocked. -->
-  <style id="leaflet-core-css">
-/* required styles */
-
-.leaflet-pane,
-.leaflet-tile,
-.leaflet-marker-icon,
-.leaflet-marker-shadow,
-.leaflet-tile-container,
-.leaflet-pane > svg,
-.leaflet-pane > canvas,
-.leaflet-zoom-box,
-.leaflet-image-layer,
-.leaflet-layer {
-	position: absolute;
-	left: 0;
-	top: 0;
-	}
-.leaflet-container {
-	overflow: hidden;
-	}
-.leaflet-tile,
-.leaflet-marker-icon,
-.leaflet-marker-shadow {
-	-webkit-user-select: none;
-	   -moz-user-select: none;
-	        user-select: none;
-	  -webkit-user-drag: none;
-	}
-/* Prevents IE11 from highlighting tiles in blue */
-.leaflet-tile::selection {
-	background: transparent;
-}
-/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
-.leaflet-safari .leaflet-tile {
-	image-rendering: -webkit-optimize-contrast;
-	}
-/* hack that prevents hw layers "stretching" when loading new tiles */
-.leaflet-safari .leaflet-tile-container {
-	width: 1600px;
-	height: 1600px;
-	-webkit-transform-origin: 0 0;
-	}
-.leaflet-marker-icon,
-.leaflet-marker-shadow {
-	display: block;
-	}
-/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
-/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
-.leaflet-container .leaflet-overlay-pane svg {
-	max-width: none !important;
-	max-height: none !important;
-	}
-.leaflet-container .leaflet-marker-pane img,
-.leaflet-container .leaflet-shadow-pane img,
-.leaflet-container .leaflet-tile-pane img,
-.leaflet-container img.leaflet-image-layer,
-.leaflet-container .leaflet-tile {
-	max-width: none !important;
-	max-height: none !important;
-	width: auto;
-	padding: 0;
-	}
-
-.leaflet-container img.leaflet-tile {
-	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
-	mix-blend-mode: plus-lighter;
-}
-
-.leaflet-container.leaflet-touch-zoom {
-	-ms-touch-action: pan-x pan-y;
-	touch-action: pan-x pan-y;
-	}
-.leaflet-container.leaflet-touch-drag {
-	-ms-touch-action: pinch-zoom;
-	/* Fallback for FF which doesn't support pinch-zoom */
-	touch-action: none;
-	touch-action: pinch-zoom;
-}
-.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
-	-ms-touch-action: none;
-	touch-action: none;
-}
-.leaflet-container {
-	-webkit-tap-highlight-color: transparent;
-}
-.leaflet-container a {
-	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
-}
-.leaflet-tile {
-	filter: inherit;
-	visibility: hidden;
-	}
-.leaflet-tile-loaded {
-	visibility: inherit;
-	}
-.leaflet-zoom-box {
-	width: 0;
-	height: 0;
-	-moz-box-sizing: border-box;
-	     box-sizing: border-box;
-	z-index: 800;
-	}
-/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
-.leaflet-overlay-pane svg {
-	-moz-user-select: none;
-	}
-
-.leaflet-pane         { z-index: 400; }
-
-.leaflet-tile-pane    { z-index: 200; }
-.leaflet-overlay-pane { z-index: 400; }
-.leaflet-shadow-pane  { z-index: 500; }
-.leaflet-marker-pane  { z-index: 600; }
-.leaflet-tooltip-pane   { z-index: 650; }
-.leaflet-popup-pane   { z-index: 700; }
-
-.leaflet-map-pane canvas { z-index: 100; }
-.leaflet-map-pane svg    { z-index: 200; }
-
-.leaflet-vml-shape {
-	width: 1px;
-	height: 1px;
-	}
-.lvml {
-	behavior: url(#default#VML);
-	display: inline-block;
-	position: absolute;
-	}
-
-
-/* control positioning */
-
-.leaflet-control {
-	position: relative;
-	z-index: 800;
-	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
-	pointer-events: auto;
-	}
-.leaflet-top,
-.leaflet-bottom {
-	position: absolute;
-	z-index: 1000;
-	pointer-events: none;
-	}
-.leaflet-top {
-	top: 0;
-	}
-.leaflet-right {
-	right: 0;
-	}
-.leaflet-bottom {
-	bottom: 0;
-	}
-.leaflet-left {
-	left: 0;
-	}
-.leaflet-control {
-	float: left;
-	clear: both;
-	}
-.leaflet-right .leaflet-control {
-	float: right;
-	}
-.leaflet-top .leaflet-control {
-	margin-top: 10px;
-	}
-.leaflet-bottom .leaflet-control {
-	margin-bottom: 10px;
-	}
-.leaflet-left .leaflet-control {
-	margin-left: 10px;
-	}
-.leaflet-right .leaflet-control {
-	margin-right: 10px;
-	}
-
-
-/* zoom and fade animations */
-
-.leaflet-fade-anim .leaflet-popup {
-	opacity: 0;
-	-webkit-transition: opacity 0.2s linear;
-	   -moz-transition: opacity 0.2s linear;
-	        transition: opacity 0.2s linear;
-	}
-.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
-	opacity: 1;
-	}
-.leaflet-zoom-animated {
-	-webkit-transform-origin: 0 0;
-	    -ms-transform-origin: 0 0;
-	        transform-origin: 0 0;
-	}
-svg.leaflet-zoom-animated {
-	will-change: transform;
-}
-
-.leaflet-zoom-anim .leaflet-zoom-animated {
-	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
-	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
-	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
-	}
-.leaflet-zoom-anim .leaflet-tile,
-.leaflet-pan-anim .leaflet-tile {
-	-webkit-transition: none;
-	   -moz-transition: none;
-	        transition: none;
-	}
-
-.leaflet-zoom-anim .leaflet-zoom-hide {
-	visibility: hidden;
-	}
-
-
-/* cursors */
-
-.leaflet-interactive {
-	cursor: pointer;
-	}
-.leaflet-grab {
-	cursor: -webkit-grab;
-	cursor:    -moz-grab;
-	cursor:         grab;
-	}
-.leaflet-crosshair,
-.leaflet-crosshair .leaflet-interactive {
-	cursor: crosshair;
-	}
-.leaflet-popup-pane,
-.leaflet-control {
-	cursor: auto;
-	}
-.leaflet-dragging .leaflet-grab,
-.leaflet-dragging .leaflet-grab .leaflet-interactive,
-.leaflet-dragging .leaflet-marker-draggable {
-	cursor: move;
-	cursor: -webkit-grabbing;
-	cursor:    -moz-grabbing;
-	cursor:         grabbing;
-	}
-
-/* marker & overlays interactivity */
-.leaflet-marker-icon,
-.leaflet-marker-shadow,
-.leaflet-image-layer,
-.leaflet-pane > svg path,
-.leaflet-tile-container {
-	pointer-events: none;
-	}
-
-.leaflet-marker-icon.leaflet-interactive,
-.leaflet-image-layer.leaflet-interactive,
-.leaflet-pane > svg path.leaflet-interactive,
-svg.leaflet-image-layer.leaflet-interactive path {
-	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
-	pointer-events: auto;
-	}
-
-/* visual tweaks */
-
-.leaflet-container {
-	background: #ddd;
-	outline-offset: 1px;
-	}
-.leaflet-container a {
-	color: #0078A8;
-	}
-.leaflet-zoom-box {
-	border: 2px dotted #38f;
-	background: rgba(255,255,255,0.5);
-	}
-
-
-/* general typography */
-.leaflet-container {
-	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	font-size: 0.75rem;
-	line-height: 1.5;
-	}
-
-
-/* general toolbar styles */
-
-.leaflet-bar {
-	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
-	border-radius: 4px;
-	}
-.leaflet-bar a {
-	background-color: #fff;
-	border-bottom: 1px solid #ccc;
-	width: 26px;
-	height: 26px;
-	line-height: 26px;
-	display: block;
-	text-align: center;
-	text-decoration: none;
-	color: black;
-	}
-.leaflet-bar a,
-.leaflet-control-layers-toggle {
-	background-position: 50% 50%;
-	background-repeat: no-repeat;
-	display: block;
-	}
-.leaflet-bar a:hover,
-.leaflet-bar a:focus {
-	background-color: #f4f4f4;
-	}
-.leaflet-bar a:first-child {
-	border-top-left-radius: 4px;
-	border-top-right-radius: 4px;
-	}
-.leaflet-bar a:last-child {
-	border-bottom-left-radius: 4px;
-	border-bottom-right-radius: 4px;
-	border-bottom: none;
-	}
-.leaflet-bar a.leaflet-disabled {
-	cursor: default;
-	background-color: #f4f4f4;
-	color: #bbb;
-	}
-
-.leaflet-touch .leaflet-bar a {
-	width: 30px;
-	height: 30px;
-	line-height: 30px;
-	}
-.leaflet-touch .leaflet-bar a:first-child {
-	border-top-left-radius: 2px;
-	border-top-right-radius: 2px;
-	}
-.leaflet-touch .leaflet-bar a:last-child {
-	border-bottom-left-radius: 2px;
-	border-bottom-right-radius: 2px;
-	}
-
-/* zoom control */
-
-.leaflet-control-zoom-in,
-.leaflet-control-zoom-out {
-	font: bold 18px 'Lucida Console', Monaco, monospace;
-	text-indent: 1px;
-	}
-
-.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
-	font-size: 22px;
-	}
-
-
-/* layers control */
-
-.leaflet-control-layers {
-	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-	background: #fff;
-	border-radius: 5px;
-	}
-.leaflet-control-layers-toggle {
-	background-image: url(images/layers.png);
-	width: 36px;
-	height: 36px;
-	}
-.leaflet-retina .leaflet-control-layers-toggle {
-	background-image: url(images/layers-2x.png);
-	background-size: 26px 26px;
-	}
-.leaflet-touch .leaflet-control-layers-toggle {
-	width: 44px;
-	height: 44px;
-	}
-.leaflet-control-layers .leaflet-control-layers-list,
-.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
-	display: none;
-	}
-.leaflet-control-layers-expanded .leaflet-control-layers-list {
-	display: block;
-	position: relative;
-	}
-.leaflet-control-layers-expanded {
-	padding: 6px 10px 6px 6px;
-	color: #333;
-	background: #fff;
-	}
-.leaflet-control-layers-scrollbar {
-	overflow-y: scroll;
-	overflow-x: hidden;
-	padding-right: 5px;
-	}
-.leaflet-control-layers-selector {
-	margin-top: 2px;
-	position: relative;
-	top: 1px;
-	}
-.leaflet-control-layers label {
-	display: block;
-	font-size: 13px;
-	font-size: 1.08333em;
-	}
-.leaflet-control-layers-separator {
-	height: 0;
-	border-top: 1px solid #ddd;
-	margin: 5px -10px 5px -6px;
-	}
-
-/* Default icon URLs */
-.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
-	background-image: url(images/marker-icon.png);
-	}
-
-
-/* attribution and scale controls */
-
-.leaflet-container .leaflet-control-attribution {
-	background: #fff;
-	background: rgba(255, 255, 255, 0.8);
-	margin: 0;
-	}
-.leaflet-control-attribution,
-.leaflet-control-scale-line {
-	padding: 0 5px;
-	color: #333;
-	line-height: 1.4;
-	}
-.leaflet-control-attribution a {
-	text-decoration: none;
-	}
-.leaflet-control-attribution a:hover,
-.leaflet-control-attribution a:focus {
-	text-decoration: underline;
-	}
-.leaflet-attribution-flag {
-	display: inline !important;
-	vertical-align: baseline !important;
-	width: 1em;
-	height: 0.6669em;
-	}
-.leaflet-left .leaflet-control-scale {
-	margin-left: 5px;
-	}
-.leaflet-bottom .leaflet-control-scale {
-	margin-bottom: 5px;
-	}
-.leaflet-control-scale-line {
-	border: 2px solid #777;
-	border-top: none;
-	line-height: 1.1;
-	padding: 2px 5px 1px;
-	white-space: nowrap;
-	-moz-box-sizing: border-box;
-	     box-sizing: border-box;
-	background: rgba(255, 255, 255, 0.8);
-	text-shadow: 1px 1px #fff;
-	}
-.leaflet-control-scale-line:not(:first-child) {
-	border-top: 2px solid #777;
-	border-bottom: none;
-	margin-top: -2px;
-	}
-.leaflet-control-scale-line:not(:first-child):not(:last-child) {
-	border-bottom: 2px solid #777;
-	}
-
-.leaflet-touch .leaflet-control-attribution,
-.leaflet-touch .leaflet-control-layers,
-.leaflet-touch .leaflet-bar {
-	box-shadow: none;
-	}
-.leaflet-touch .leaflet-control-layers,
-.leaflet-touch .leaflet-bar {
-	border: 2px solid rgba(0,0,0,0.2);
-	background-clip: padding-box;
-	}
-
-
-/* popup */
-
-.leaflet-popup {
-	position: absolute;
-	text-align: center;
-	margin-bottom: 20px;
-	}
-.leaflet-popup-content-wrapper {
-	padding: 1px;
-	text-align: left;
-	border-radius: 12px;
-	}
-.leaflet-popup-content {
-	margin: 13px 24px 13px 20px;
-	line-height: 1.3;
-	font-size: 13px;
-	font-size: 1.08333em;
-	min-height: 1px;
-	}
-.leaflet-popup-content p {
-	margin: 17px 0;
-	margin: 1.3em 0;
-	}
-.leaflet-popup-tip-container {
-	width: 40px;
-	height: 20px;
-	position: absolute;
-	left: 50%;
-	margin-top: -1px;
-	margin-left: -20px;
-	overflow: hidden;
-	pointer-events: none;
-	}
-.leaflet-popup-tip {
-	width: 17px;
-	height: 17px;
-	padding: 1px;
-
-	margin: -10px auto 0;
-	pointer-events: auto;
-
-	-webkit-transform: rotate(45deg);
-	   -moz-transform: rotate(45deg);
-	    -ms-transform: rotate(45deg);
-	        transform: rotate(45deg);
-	}
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-	background: white;
-	color: #333;
-	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
-	}
-.leaflet-container a.leaflet-popup-close-button {
-	position: absolute;
-	top: 0;
-	right: 0;
-	border: none;
-	text-align: center;
-	width: 24px;
-	height: 24px;
-	font: 16px/24px Tahoma, Verdana, sans-serif;
-	color: #757575;
-	text-decoration: none;
-	background: transparent;
-	}
-.leaflet-container a.leaflet-popup-close-button:hover,
-.leaflet-container a.leaflet-popup-close-button:focus {
-	color: #585858;
-	}
-.leaflet-popup-scrolled {
-	overflow: auto;
-	}
-
-.leaflet-oldie .leaflet-popup-content-wrapper {
-	-ms-zoom: 1;
-	}
-.leaflet-oldie .leaflet-popup-tip {
-	width: 24px;
-	margin: 0 auto;
-
-	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
-	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
-	}
-
-.leaflet-oldie .leaflet-control-zoom,
-.leaflet-oldie .leaflet-control-layers,
-.leaflet-oldie .leaflet-popup-content-wrapper,
-.leaflet-oldie .leaflet-popup-tip {
-	border: 1px solid #999;
-	}
-
-
-/* div icon */
-
-.leaflet-div-icon {
-	background: #fff;
-	border: 1px solid #666;
-	}
-
-
-/* Tooltip */
-/* Base styles for the element that has a tooltip */
-.leaflet-tooltip {
-	position: absolute;
-	padding: 6px;
-	background-color: #fff;
-	border: 1px solid #fff;
-	border-radius: 3px;
-	color: #222;
-	white-space: nowrap;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	pointer-events: none;
-	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-	}
-.leaflet-tooltip.leaflet-interactive {
-	cursor: pointer;
-	pointer-events: auto;
-	}
-.leaflet-tooltip-top:before,
-.leaflet-tooltip-bottom:before,
-.leaflet-tooltip-left:before,
-.leaflet-tooltip-right:before {
-	position: absolute;
-	pointer-events: none;
-	border: 6px solid transparent;
-	background: transparent;
-	content: "";
-	}
-
-/* Directions */
-
-.leaflet-tooltip-bottom {
-	margin-top: 6px;
-}
-.leaflet-tooltip-top {
-	margin-top: -6px;
-}
-.leaflet-tooltip-bottom:before,
-.leaflet-tooltip-top:before {
-	left: 50%;
-	margin-left: -6px;
-	}
-.leaflet-tooltip-top:before {
-	bottom: 0;
-	margin-bottom: -12px;
-	border-top-color: #fff;
-	}
-.leaflet-tooltip-bottom:before {
-	top: 0;
-	margin-top: -12px;
-	margin-left: -6px;
-	border-bottom-color: #fff;
-	}
-.leaflet-tooltip-left {
-	margin-left: -6px;
-}
-.leaflet-tooltip-right {
-	margin-left: 6px;
-}
-.leaflet-tooltip-left:before,
-.leaflet-tooltip-right:before {
-	top: 50%;
-	margin-top: -6px;
-	}
-.leaflet-tooltip-left:before {
-	right: 0;
-	margin-right: -12px;
-	border-left-color: #fff;
-	}
-.leaflet-tooltip-right:before {
-	left: 0;
-	margin-left: -12px;
-	border-right-color: #fff;
-	}
-
-/* Printing */
-
-@media print {
-	/* Prevent printers from removing background-images of controls. */
-	.leaflet-control {
-		-webkit-print-color-adjust: exact;
-		print-color-adjust: exact;
-		}
-	}
-
-  </style>
-  <style>
-    :root{--ink:#2a1837;--muted:#6e6478;--purple:#70278c;--purple2:#9c4db2;--white:#fff;--line:#e9e2ec;--shadow:0 16px 52px rgba(30,21,44,.19)}
-    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#eae4e1;color:var(--ink)}
-    button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #b45ed2;outline-offset:2px}
-    #map{position:fixed;inset:0;width:100vw;height:100dvh;background:#e6e9eb;z-index:0;overflow:hidden}\n    .leaflet-container img.leaflet-tile{max-width:none!important;max-height:none!important}
-    .top{position:absolute;z-index:700;top:18px;left:18px;right:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;pointer-events:none}
-    .logo,.search{pointer-events:auto;border:1px solid #e8e0e8;background:rgba(255,255,255,.98);box-shadow:var(--shadow);border-radius:12px}
-    .logo{display:flex;align-items:center;gap:11px;padding:12px 16px;max-width:350px}
-    .logoMark{width:40px;height:40px;display:grid;place-items:center;background:#63267c;color:#fff;border-radius:10px;font-weight:900;font-size:15px;letter-spacing:-1px}
-    .logo strong{display:block;font-size:15px;line-height:1.2}.logo small{display:block;color:var(--muted);font-size:11px;margin-top:4px}
-    .search{width:min(360px,45vw);position:relative}.searchInner{display:flex;align-items:center;gap:8px;padding:8px 13px}.search svg{flex:none;width:18px;height:18px;color:#8d8393}
-    .search input{min-width:0;width:100%;height:31px;border:0;outline:0;background:transparent;font-size:13px}.suggest{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:350px;overflow:auto;background:#fff;border-radius:12px;border:1px solid #e9e1ee;box-shadow:var(--shadow);padding:5px}
-    .suggest button{display:block;width:100%;text-align:left;background:#fff;border:0;border-radius:8px;padding:10px 11px;font-size:13px;color:var(--ink)}.suggest button:hover{background:#f7eff9}.suggest small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
-    .legend{position:absolute;z-index:660;right:20px;bottom:28px;width:310px;background:rgba(255,255,255,.98);box-shadow:var(--shadow);border:1px solid #e8e0e8;border-radius:12px;padding:16px 18px}
-    .legendHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.legend h3{font-size:15px;margin:0;line-height:1.4;letter-spacing:-.02em}.legend .year{font-size:10px;color:#6e477d;font-weight:800;background:#f3e8f7;padding:4px 7px;border-radius:5px}
-    .legend p{font-size:11px;line-height:1.5;margin:6px 0 12px;color:#7b6b82}.swatches{height:15px;background:linear-gradient(90deg,#f4edf8,#dfcbe9,#b58acc,#8e4fa9,#693080,#421856);border:1px solid #e4dae9;border-radius:3px}.ticks{display:flex;justify-content:space-between;color:#645b6c;font-size:10px;margin-top:6px}.legendFoot{font-size:10px;color:#817884;line-height:1.5;margin-top:12px}
-    .toast{position:absolute;z-index:900;left:50%;bottom:28px;transform:translateX(-50%);max-width:min(560px,92vw);border:1px solid #e6dce9;background:#fff;box-shadow:var(--shadow);border-radius:10px;padding:12px 16px;color:#584566;font-size:12px;line-height:1.5;display:none;text-align:center}
-    .toast.show{display:block}.toast button{margin-left:8px;border:0;border-radius:6px;padding:5px 8px;color:#693080;background:#f3e5f8;font-weight:700}
-    .help{position:absolute;z-index:660;left:20px;bottom:24px;max-width:360px;border:1px solid #e8e0e8;background:rgba(255,255,255,.97);border-radius:10px;box-shadow:var(--shadow);padding:13px 16px;font-size:12px;color:#594967}
-    .help b{display:block;font-size:13px;color:#3d224e;margin-bottom:4px}
-    .drawer{position:absolute;z-index:750;left:18px;top:105px;bottom:110px;width:min(352px,calc(100% - 36px));display:none;flex-direction:column;border-radius:14px;background:#fff;border:1px solid #e7dfeb;box-shadow:var(--shadow);overflow:hidden}.drawer.visible{display:flex}
-    .drawerHeader{padding:18px 19px;border-bottom:1px solid var(--line)}.smallCaps{font-size:10px;font-weight:850;letter-spacing:.12em;color:#7f3b96;text-transform:uppercase}.drawerHeader h2{font-size:23px;line-height:1.13;letter-spacing:-.04em;margin:8px 0 8px}.drawerHeader .county{font-size:12px;color:var(--muted)}
-    .back{border:0;background:transparent;color:#7e348f;font-size:12px;font-weight:800;padding:0;margin-bottom:13px;display:inline-block}
-    .drawerScroll{overflow:auto;flex:1;padding:13px}.statusChip{display:inline-block;font-size:11px;padding:6px 9px;border-radius:20px;background:#f3e9f6;color:#6a2e82;margin-top:10px;font-weight:700}
-    .school{border:1px solid var(--line);border-radius:9px;background:#fff;padding:12px;display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;margin-bottom:8px;color:var(--ink)}.school:hover{background:#fbf5fd;border-color:#c9aed7}.school .dot{width:24px;height:24px;display:grid;place-items:center;flex:none;border-radius:50%;background:#ead6f1;color:#773597;font-size:13px}.school strong{font-size:12px;line-height:1.3;display:block}.school small{font-size:11px;color:#7a7081;display:block;margin-top:4px}
-    .detail p{font-size:13px;line-height:1.6;color:#53475b}.label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#8b8190;font-weight:800;margin:18px 0 4px}.val{font-size:13px;font-weight:680;color:#33213e;line-height:1.45}.pending{margin-top:17px;border:1px solid #e6d9ec;border-radius:10px;background:#f9f4fb;padding:14px;font-size:12px;line-height:1.6;color:#60526a}.pending strong{display:block;color:#502869;margin-bottom:3px}
-    .leaflet-control-zoom{border:0!important;border-radius:9px!important;box-shadow:var(--shadow)!important;overflow:hidden}.leaflet-control-zoom a{color:#6a2b80!important;border:0!important}.leaflet-control-attribution{font-size:10px!important}.leaflet-tooltip{border:1px solid #e5d8e9;border-radius:8px;padding:8px 10px;box-shadow:0 6px 18px #38234029;color:#361941;font-size:12px;font-weight:730}
-    .school-pin{display:grid;place-items:center;background:#fff;color:#68237d;width:29px;height:29px;border:2px solid #8a3ca6;box-shadow:0 2px 6px #3621454a;border-radius:50%;font-size:14px}.school-pin.active{width:36px;height:36px;border:3px solid #64227c;background:#f4e6fa}
-    @media(max-width:710px){.top{top:9px;left:9px;right:9px;gap:6px}.logo{padding:8px;border-radius:10px;gap:6px}.logoMark{width:30px;height:30px;border-radius:8px;font-size:11px}.logo strong{font-size:12px}.logo small{font-size:9px}.search{width:47vw}.searchInner{padding:5px 8px}.search input{font-size:11px}.legend{width:230px;right:8px;bottom:15px;padding:12px}.help{left:8px;bottom:15px;font-size:10px;width:150px;padding:10px}.help b{font-size:11px}.drawer{top:auto;bottom:8px;left:8px;right:8px;width:auto;height:55%;max-height:480px}.legend p{font-size:10px}.logo small{max-width:128px}}
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NJ STEM Opportunity Atlas | District Explorer</title>
+<meta name="description" content="Interactive map of New Jersey school districts with advanced STEM research data, district profiles, and school explorer.">
+<link rel="preconnect" href="https://unpkg.com"><link rel="preconnect" href="https://tile.openstreetmap.org">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* Critical Leaflet layout rules: embedded so map tiles never scatter if remote CSS fails. */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;position:relative;outline:0;touch-action:pan-x pan-y;background:#edf5f3}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.leaflet-tile{visibility:hidden;max-width:none!important;max-height:none!important}
+.leaflet-tile-loaded{visibility:inherit}
+.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-control{position:relative;z-index:800;pointer-events:auto}.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-bottom{bottom:0}.leaflet-right{right:0}.leaflet-left{left:0}.leaflet-control-container .leaflet-top .leaflet-control{margin-top:10px}.leaflet-control-container .leaflet-left .leaflet-control{margin-left:10px}.leaflet-control-container .leaflet-right .leaflet-control{margin-right:10px}.leaflet-control-container .leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-control-zoom a{display:block;width:30px;height:30px;line-height:30px;text-align:center;text-decoration:none;background:#fff;color:#194b43;border-bottom:1px solid #dce9e4;font-size:20px}.leaflet-control-zoom a:last-child{border:0}.leaflet-control-zoom{box-shadow:0 5px 20px #0e4b3f20;border-radius:9px;overflow:hidden}.leaflet-control-attribution{background:#ffffffdc!important;font:10px Arial;padding:3px 7px}.leaflet-interactive{cursor:pointer}.leaflet-tooltip{position:absolute;white-space:nowrap;padding:7px 10px;border-radius:8px;border:1px solid #dce7e3;background:white;box-shadow:0 5px 18px #193c3326;font:12px system-ui;color:#17483f;pointer-events:none}.leaflet-tooltip-top:before{content:'';position:absolute;bottom:-7px;left:48%;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+:root{--ink:#152e2b;--muted:#718581;--line:#dce8e3;--green:#11695d;--deep:#093e39;--pale:#f4f9f7;--blue:#e4f0ec;--shadow:0 16px 55px #1e473b15}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden;font-family:Inter,system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:var(--ink);background:#f4f8f5}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #78b6a8;outline-offset:2px}button:disabled{cursor:not-allowed;opacity:.5}
+.shell{height:100dvh;display:grid;grid-template-rows:68px minmax(0,1fr)}.header{display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#fff;border-bottom:1px solid var(--line);gap:16px;z-index:10}.identity{display:flex;align-items:center;gap:12px;min-width:0}.symbol{width:40px;height:40px;border-radius:11px;background:#0b554e;color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900}.identity strong{display:block;font-size:17px;letter-spacing:-.035em}.identity small{display:block;color:var(--muted);font-size:11px;margin-top:3px}.toolbar{display:flex;align-items:center;gap:9px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid #d4e3dd;border-radius:9px;background:#fff;color:#23584d;padding:10px 13px;font-size:12px;font-weight:680;white-space:nowrap}.btn:hover{background:#f0f8f5}.btn-primary{background:#0b5e52;color:#fff;border-color:#0b5e52}.btn-primary:hover{background:#0a4b44}.layout{min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr)}.sidebar{min-height:0;overflow:auto;background:#fff;border-right:1px solid var(--line);padding:22px 18px 24px;z-index:6}.sidebarHead{display:flex;align-items:center;justify-content:space-between}.eyebrow{font-size:10px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#609185}.reset{border:0;background:transparent;color:#217566;font-size:11px;font-weight:700}.section{margin:20px 0}.fieldLabel{font-size:12px;font-weight:750;display:block;margin-bottom:9px;color:#365b52}.field{width:100%;padding:12px 12px;border:1px solid #d6e3de;border-radius:10px;background:#fafdfb;color:#244b43;font-size:12px;appearance:auto}.separator{height:1px;background:var(--line);margin:20px 0}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid #dceae4;background:#f2f7f4;border-radius:6px;font-size:11px;color:#52796e;padding:7px 10px}.chip.active{color:#fff;background:#187568;border-color:#187568}.hint{font-size:10px;line-height:1.55;color:var(--muted);margin-top:9px}.resultCount{padding:0 0 11px;font-size:12px;color:#53756b;font-weight:700;display:flex;align-items:center;justify-content:space-between}.districtList{display:grid;gap:0;border-top:1px solid #e6efeb;max-height:350px;overflow:auto}.districtItem{padding:12px 5px;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;border:0;border-bottom:1px solid #e8efec;background:transparent;color:#2c4943;width:100%}.districtItem:hover,.districtItem.active{background:#eaf5f0}.districtItem strong{font-size:11px;line-height:1.3;display:block;font-weight:730}.districtItem small{font-size:10px;color:#769087;display:block;margin-top:3px}.districtItem span:last-child{font-size:18px;color:#66988b}.districtEmpty{font-size:12px;color:#798e89;line-height:1.6}.mapWrap{position:relative;min-width:0;min-height:0;background:#f5faf7}.map{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}.mapHeading{position:absolute;left:20px;top:19px;z-index:700;background:#ffffffea;border:1px solid #e7efec;padding:11px 15px;border-radius:11px;box-shadow:var(--shadow);pointer-events:none;max-width:calc(100% - 360px)}.mapHeading strong{display:block;font-size:15px;letter-spacing:-.02em}.mapHeading small{display:block;color:#758b82;margin-top:4px;font-size:11px}.legend{position:absolute;bottom:25px;left:22px;z-index:700;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);border-radius:12px;width:240px;padding:14px 15px}.legend strong{font-size:12px}.legend small{font-size:10px;color:#738b81;display:block;margin:7px 0 10px;line-height:1.4}.bar{height:12px;width:100%;background:linear-gradient(90deg,#d5efe6,#9ed4bf,#6fb49b,#388a77,#0e5a4f,#063d38);border-radius:3px}.ticks{display:flex;justify-content:space-between;font-size:9px;color:#7a8d86;margin-top:6px}.noDataSwatch{display:flex;gap:8px;align-items:center;font-size:10px;color:#7a8d86;margin-top:12px}.noDataSwatch i{width:13px;height:13px;background:#dfe7e3;border:1px solid #c5d6cf;display:block}.mapNotice{position:absolute;z-index:690;left:50%;top:78px;transform:translateX(-50%);max-width:430px;background:#fff;box-shadow:var(--shadow);padding:12px 17px;border:1px solid #dfe9e4;border-radius:10px;font-size:12px;color:#617d73;text-align:center;display:none}.mapNotice.visible{display:block}.profile{position:absolute;z-index:720;right:18px;top:18px;bottom:18px;width:min(345px,calc(100% - 40px));background:#fff;box-shadow:0 18px 60px #102f2852;border-radius:15px;display:none;overflow:hidden;flex-direction:column}.profile.visible{display:flex}.profileHead{padding:23px 23px 14px;border-bottom:1px solid var(--line)}.profileHead h2{font-size:20px;letter-spacing:-.035em;line-height:1.16;margin:9px 26px 6px 0}.profileClose{position:absolute;right:17px;top:15px;border:0;border-radius:50%;width:29px;height:29px;background:#edf5f1;color:#517a6e}.profileScroll{padding:17px 22px 28px;overflow:auto;min-height:0}.metricHero{background:linear-gradient(100deg,#e3f6ee,#edf8f3);padding:19px;border-radius:10px;margin-bottom:15px}.metricHero small{display:block;font-size:11px;color:#597d70}.metricHero strong{display:block;font-size:27px;color:#0a6154;margin-top:7px;letter-spacing:-.04em}.pair{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid #e7efeb;padding:11px 0;gap:15px;font-size:11px}.pair span{color:#678379}.pair b{color:#32544b;text-align:right;max-width:55%;font-weight:720}.sectionHeading{font-size:12px;margin:21px 0 11px;font-weight:790}.trendSvg{height:103px;width:100%;background:#f8fbf9;border:1px solid #e5efea;border-radius:9px}.emptyText{font-size:11px;line-height:1.65;color:#7b8e86;padding:12px 13px;border:1px dashed #cadcd4;background:#f8fbf9;border-radius:9px}.schoolButton{display:flex;justify-content:space-between;padding:12px;width:100%;background:#fff;border:1px solid #e2ede7;border-radius:9px;margin:7px 0;text-align:left;color:#32584e}.schoolButton strong{font-size:11px}.schoolButton small{display:block;color:#84988d;font-size:10px;margin-top:5px}.schoolButton:hover{background:#edf7f2}.schoolDot{height:24px;width:24px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#0b6759;border:2px solid #187363;box-shadow:0 3px 12px #29473b3d;font-size:14px}.credit{position:absolute;z-index:690;right:12px;bottom:6px;color:#526f62;font-size:9px;background:#ffffffcd;padding:3px 8px;border-radius:4px}.busy{position:absolute;inset:0;z-index:800;background:#f3f8f4d9;display:grid;place-content:center;text-align:center;gap:12px;color:#2e6456;font-size:13px}.busy.hidden{display:none}.spinner{width:27px;height:27px;margin:auto;border:3px solid #d4e8e0;border-top-color:#0e6b5c;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.layout{grid-template-columns:235px minmax(0,1fr)}.sidebar{padding:18px 12px}.mapHeading{max-width:calc(100% - 45px)}.profile{top:82px;width:min(310px,calc(100% - 25px))}.toolbar .btn-secondary{display:none}}@media(max-width:650px){.shell{grid-template-rows:64px minmax(0,1fr)}.header{padding:0 10px}.identity strong{font-size:13px}.identity small{font-size:9px}.symbol{width:34px;height:34px}.btn{padding:9px;font-size:10px}.layout{display:block}.sidebar{position:absolute;z-index:650;bottom:0;left:0;right:0;height:30%;padding:13px 18px;border-right:0;border-top:1px solid var(--line);border-radius:15px 15px 0 0;box-shadow:0 -8px 35px #0f53421b}.mapWrap{height:70%;height:calc(70dvh - 45px)}.section{margin:12px 0}.sidebarHead,.separator,.chips,.sidebar .hint{display:none}.districtList{max-height:100px}.mapHeading{top:11px;left:12px;max-width:55%;padding:8px}.mapHeading strong{font-size:11px}.mapHeading small{font-size:9px}.legend{bottom:13px;left:12px;width:180px;padding:10px}.profile{right:6px;left:6px;top:12px;bottom:10px;width:auto}.credit{display:none}}
+</style>
 </head>
 <body>
-  <main id="map" aria-label="Interactive shaded map of New Jersey municipalities"></main>
-  <header class="top">
-    <div class="logo"><div class="logoMark">NJ</div><div><strong>New Jersey STEM Atlas</strong><small>Interactive municipality &amp; school map</small></div></div>
-    <div class="search"><div class="searchInner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg><input id="search" aria-label="Search town" placeholder="Search a New Jersey town…" autocomplete="off"></div><div id="suggest" class="suggest" role="listbox"></div></div>
-  </header>
-  <aside id="drawer" class="drawer" aria-live="polite"><div id="drawerHead" class="drawerHeader"></div><div id="drawerBody" class="drawerScroll"></div></aside>
-  <aside class="legend" aria-label="Map legend"><div class="legendHead"><h3 id="legendTitle">NJ population density</h3><span class="year" id="legendYear">2020</span></div><p id="legendDescription">People per square mile across New Jersey municipalities</p><div class="swatches" id="swatches"></div><div class="ticks"><span id="legendLow">Lower</span><span id="legendMid">Mid</span><span id="legendHigh">Higher</span></div><div class="legendFoot" id="legendFoot">Map context only · Not AP/IB results. Source: NJ Office of GIS. Click any municipality to see its schools.</div></aside>
-  <div class="help" id="help"><b>Explore New Jersey</b>Click a purple area → zoom into the town → select a school.</div>
-  <div id="toast" class="toast" role="status"></div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script>
-  (()=>{
-    'use strict';
-    const $=id=>document.getElementById(id);
-    const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const muniEndpoint='https://maps.nj.gov/arcgis/rest/services/Framework/Government_Boundaries/MapServer/2/query';
-    const muniFallback='https://cdn.jsdelivr.net/gh/njam-data/new-jersey-municipalities@main/data/new-jersey-municipalities-simplified-geojson.json';
-    const schoolSource='https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/ArcGIS/rest/services/School_Point_Locations_of_NJ/FeatureServer/0/query';
-    const ncesSource='https://nces.ed.gov/opengis/rest/services/K12_School_Locations/EDGE_ADMINDATA_PUBLICSCH_2425/MapServer/1/query';
-    const P=['#f4edf8','#dfcbe9','#b58acc','#8e4fa9','#693080','#421856'];
-    const NJ_BOUNDS=[[38.9,-75.63],[41.41,-73.82]];
-    let map,polyLayer=null, features=[], currentFeature=null,currentLayer=null,schoolLayer=null,selectedSchools=[],selectedSchool=null,schoolMarkers=[],requestSeq=0,layerMode='density';
-    function showToast(msg,retry=null){$('toast').innerHTML=esc(msg)+(retry?'<button id="retry">Retry</button>':'');$('toast').classList.add('show');if(retry)$('retry').onclick=retry;}
-    function clearToast(){$('toast').classList.remove('show')}
-    function props(f){return f?.properties||{}}
-    function town(f){const p=props(f);return p.NAME||p.MUN_LABEL||p.MUN||p.name||p.municipality||'Unnamed municipality'}
-    function county(f){const p=props(f);return p.COUNTY||p.county||p.COUNTY_NAME||'New Jersey'}
-    function density(f){const p=props(f);let x=Number(p.POPDEN2020);return Number.isFinite(x)&&x>0?x:null}
-    function townBounds(f){return L.geoJSON(f).getBounds()}
-    function colorFor(f){if(layerMode==='county'){const n=String(county(f)).toUpperCase().split('').reduce((a,c)=>a+c.charCodeAt(0),0);return P[n%P.length];}
-      const v=density(f);if(v===null)return '#c7bacb';return v<500?P[0]:v<1500?P[1]:v<3000?P[2]:v<6000?P[3]:v<12000?P[4]:P[5];}
-    function style(f,active=false){return {color:active?'#33153d':'#fff',weight:active?3.2:.75,opacity:active?1:.76,fillColor:colorFor(f),fillOpacity:active?.91:.76};}
-    function setupLegend(){if(layerMode==='density'){$('legendTitle').textContent='Population density in NJ';$('legendYear').textContent='2020';$('legendDescription').textContent='People per square mile · municipal context';$('legendLow').textContent='0–500';$('legendMid').textContent='3,000';$('legendHigh').textContent='12,000+';$('legendFoot').textContent='Purple areas represent 2020 density, NOT AP/IB performance. Source: NJ Office of GIS.';}
-      else{$('legendTitle').textContent='New Jersey municipalities';$('legendYear').textContent='Reference';$('legendDescription').textContent='Purple shading distinguishes areas for exploration';$('legendLow').textContent='Town';$('legendMid').textContent='County groups';$('legendHigh').textContent='NJ';$('legendFoot').textContent='Reference colors only, NOT education statistics. Source: NJ municipal boundaries (njam-data / NJOGIS).';}}
-    async function fetchJSON(url,timeout=22000){const c=new AbortController(),id=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw Error('HTTP '+r.status);const v=await r.json();if(v.error)throw Error(v.error.message||'GIS service error');return v;}finally{clearTimeout(id)}}
-    async function loadMunicipalities(){showToast('Loading New Jersey municipal boundaries…');const p=new URLSearchParams({where:'1=1',outFields:'NAME,MUN_LABEL,MUN,COUNTY,POPDEN2020,POP2020',returnGeometry:'true',outSR:'4326',geometryPrecision:'5',f:'geojson'});
-      let data;try{data=await fetchJSON(muniEndpoint+'?'+p,23000);if(!Array.isArray(data.features)||data.features.length<450)throw Error('Incomplete boundary data');layerMode='density';}
-      catch(e){console.warn('NJGIS unavailable, using geometry mirror',e);try{data=await fetchJSON(muniFallback,18000);if(!Array.isArray(data.features)||data.features.length<450)throw Error('Incomplete geometry mirror');layerMode='county';}catch(x){showToast('The town boundaries are temporarily unavailable. Check internet access, then retry.',loadMunicipalities);return;}}
-      features=data.features.filter(f=>f.geometry);setupLegend();if(polyLayer)map.removeLayer(polyLayer);
-      polyLayer=L.geoJSON({type:'FeatureCollection',features},{style:f=>style(f),onEachFeature:(f,layer)=>{
-        const d=density(f);layer.bindTooltip(`<b>${esc(town(f))}</b><br><span style="font-weight:400;color:#74647a">${esc(county(f))} County${layerMode==='density'&&d!==null?` · ${Math.round(d).toLocaleString()} / sq mi`:''}</span>`,{sticky:true,direction:'top'});
-        layer.on('mouseover',()=>{if(layer!==currentLayer){layer.setStyle({weight:2,color:'#4e1762',fillOpacity:.91});layer.bringToFront();}});
-        layer.on('mouseout',()=>{if(layer!==currentLayer)polyLayer.resetStyle(layer);});
-        layer.on('click',()=>selectTown(f,layer));}}).addTo(map);
-      clearToast();
-    }
-    function resetHome(){requestSeq++;currentFeature=null;if(currentLayer&&polyLayer)polyLayer.resetStyle(currentLayer);currentLayer=null;selectedSchools=[];selectedSchool=null;schoolMarkers=[];if(schoolLayer)schoolLayer.clearLayers();$('drawer').classList.remove('visible');$('help').style.display='block';$('search').value='';$('suggest').style.display='none';map.fitBounds(NJ_BOUNDS,{padding:[24,24],animate:true});}
-    function pointInRing(pt,ring){let inside=false;const x=pt[0],y=pt[1];for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
-    function inTown(pt,geo){if(!geo)return false;const polys=geo.type==='Polygon'?[geo.coordinates]:geo.type==='MultiPolygon'?geo.coordinates:[];return polys.some(r=>r[0]&&pointInRing(pt,r[0])&&!r.slice(1).some(h=>pointInRing(pt,h)));}
-    function schoolFrom(f,src){const p=f.properties||{};const coords=f.geometry?.coordinates;if(!Array.isArray(coords)||coords.length<2)return null;
-      if(src==='nj'){return {name:p.SCHOOLNAME||p.SCHOOL||'Unnamed school',district:p.DIST_NAME||'',address:[p.ADDRESS1,p.CITY,'NJ',p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',type:Number(p.CATEGORY)===1?'Charter':'Public',lat:coords[1],lon:coords[0],dataSource:'NJ Office of GIS school locations (last updated 2023)'};}
-      return {name:p.SCH_NAME||p.NAME||p.SCHOOLNAME||'Unnamed school',district:p.LEA_NAME||p.LEANAME||p.DIST_NAME||'',address:[p.LSTREET1||p.STREET,p.LCITY||p.CITY,'NJ',p.LZIP||p.ZIP].filter(Boolean).join(', '),phone:p.PHONE||'',type:'Public',lat:coords[1],lon:coords[0],dataSource:'NCES school directory (2024–25)'};}
-    async function getSchools(f){const b=townBounds(f),bounds=b.toBBoxString();const args={geometry:bounds,geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',returnGeometry:'true',outSR:'4326',outFields:'*',f:'geojson'};
-      let rows=[],last=null;for(const src of ['nces','nj']){try{const service=src==='nces'?ncesSource:schoolSource;const q=new URLSearchParams({...args,where:src==='nces'?"LSTATE='NJ'":"CATEGORY IN (1,3)"});const d=await fetchJSON(service+'?'+q,14500);if(!Array.isArray(d.features))throw Error('Invalid response');rows=d.features.map(a=>schoolFrom(a,src)).filter(s=>s&&inTown([s.lon,s.lat],f.geometry));if(rows.length)break;}catch(e){last=e;console.warn('School source not available',src,e)}}
-      if(!rows.length&&last)throw last;return [...new Map(rows.map(s=>[s.name.toLowerCase()+'|'+s.address.toLowerCase(),s])).values()].sort((a,b)=>a.name.localeCompare(b.name));}
-    function townHeader(){const d=density(currentFeature);$('drawerHead').innerHTML=`<button class="back" id="backHome">← All New Jersey</button><div class="smallCaps">Selected municipality</div><h2>${esc(town(currentFeature))}</h2><div class="county">${esc(county(currentFeature))} County, New Jersey</div>${layerMode==='density'&&d!==null?`<span class="statusChip">2020 density: ${Math.round(d).toLocaleString()} people / sq mi</span>`:''}<div class="statusChip" id="schoolCount">${selectedSchools.length?`${selectedSchools.length} school locations`:'Finding schools…'}</div>`;$('backHome').onclick=resetHome;}
-    function renderSchoolList(){townHeader();$('schoolCount').textContent=`${selectedSchools.length} school locations`;if(!selectedSchools.length){$('drawerBody').innerHTML='<p style="padding:6px;font-size:13px;color:#695b70;line-height:1.6">No public/charter school locations were found for this town in the available data. Some districts serve students across municipal borders.</p>';return;}
-      $('drawerBody').innerHTML=selectedSchools.map((s,i)=>`<button class="school" data-i="${i}"><span class="dot">●</span><span><strong>${esc(s.name)}</strong><small>${esc(s.type)} school${s.district?` · ${esc(s.district)}`:''}</small></span></button>`).join('');$('drawerBody').querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>showSchool(Number(el.dataset.i)));}
-    function showPins(){schoolLayer.clearLayers();schoolMarkers=selectedSchools.map((s,i)=>{const marker=L.marker([s.lat,s.lon],{icon:L.divIcon({className:'',html:'<div class="school-pin">🏫</div>',iconSize:[29,29],iconAnchor:[14,14]})});marker.bindTooltip(esc(s.name),{direction:'top',offset:[0,-12]});marker.on('click',()=>showSchool(i));marker.addTo(schoolLayer);return marker;});}
-    function showSchool(i){const s=selectedSchools[i];if(!s)return;selectedSchool=i;schoolMarkers.forEach((m,k)=>m.setIcon(L.divIcon({className:'',html:`<div class="school-pin ${k===i?'active':''}">🏫</div>`,iconSize:k===i?[36,36]:[29,29],iconAnchor:k===i?[18,18]:[14,14]})));
-      map.flyTo([s.lat,s.lon],Math.max(map.getZoom(),13),{duration:.6});$('drawerHead').innerHTML=`<button id="toTown" class="back">← ${esc(town(currentFeature))} schools</button><div class="smallCaps">School profile</div><h2>${esc(s.name)}</h2><div class="county">${esc(s.type)} school · ${esc(town(currentFeature))}</div>`;$('toTown').onclick=renderSchoolList;
-      $('drawerBody').innerHTML=`<div class="detail"><div class="label">School district</div><div class="val">${esc(s.district||'Not available')}</div><div class="label">Location</div><div class="val">${esc(s.address||'Not available')}</div>${s.phone?`<div class="label">Telephone</div><div class="val">${esc(s.phone)}</div>`:''}<div class="label">School information source</div><div class="val">${esc(s.dataSource)}</div><div class="pending"><strong>Advanced STEM participation</strong>AP/IB mathematics, science, and model predictions are not connected yet. This map shows real town boundaries and school locations; it does not invent student figures.</div><p>Schools are shown at their physical locations. A school district can serve several towns.</p></div>`;
-    }
-    async function selectTown(f,layer){const seq=++requestSeq;currentFeature=f;if(currentLayer&&polyLayer)polyLayer.resetStyle(currentLayer);currentLayer=layer||null;if(!currentLayer&&polyLayer)polyLayer.eachLayer(l=>{if(l.feature===f)currentLayer=l});if(currentLayer){currentLayer.setStyle(style(f,true));currentLayer.bringToFront()}
-      $('suggest').style.display='none';$('search').value='';$('help').style.display='none';$('drawer').classList.add('visible');selectedSchools=[];selectedSchool=null;if(schoolLayer)schoolLayer.clearLayers();townHeader();$('drawerBody').innerHTML='<p style="color:#75687b;font-size:12px;padding:12px">Loading public and charter schools inside this municipality…</p>';
-      map.flyToBounds(townBounds(f).pad(.28),{maxZoom:12.8,duration:.7,padding:[40,40]});try{const x=await getSchools(f);if(seq!==requestSeq)return;selectedSchools=x;showPins();renderSchoolList();}catch(e){if(seq!==requestSeq)return;$('drawerBody').innerHTML='<p style="font-size:12px;line-height:1.65;color:#6b5c72;padding:6px">The public school-location service did not respond. Town selection still works; you can retry the school list.</p><button class="school" id="retrySchools">Retry school locations ↻</button>';$('retrySchools').onclick=()=>selectTown(f,currentLayer);$('schoolCount').textContent='School data unavailable';}}
-    function matches(q){q=q.trim().toLowerCase();return q?features.filter(f=>(town(f)+' '+county(f)).toLowerCase().includes(q)).sort((a,b)=>{const av=town(a).toLowerCase().startsWith(q)?0:1,bv=town(b).toLowerCase().startsWith(q)?0:1;return av-bv||town(a).localeCompare(town(b))}).slice(0,9):[]}
-    function search(){const res=matches($('search').value);$('suggest').style.display=res.length?'block':'none';$('suggest').innerHTML=res.map((f,i)=>`<button data-i="${i}">${esc(town(f))}<small>${esc(county(f))} County</small></button>`).join('');$('suggest').querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{const f=res[Number(el.dataset.i)];selectTown(f);});}
-    function start(){if(typeof L==='undefined'){showToast('Map library unavailable. Check your internet connection and reload.');return;}
-      map=L.map('map',{zoomControl:false,preferCanvas:true,minZoom:6,maxZoom:18,scrollWheelZoom:true,worldCopyJump:false}).fitBounds(NJ_BOUNDS,{padding:[18,18]});\n      setTimeout(()=>{map.invalidateSize({pan:false});map.fitBounds(NJ_BOUNDS,{padding:[18,18],animate:false});},250);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',crossOrigin:true}).addTo(map);
-      L.control.zoom({position:'bottomleft'}).addTo(map);schoolLayer=L.layerGroup().addTo(map);$('search').addEventListener('input',search);$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){const f=matches(e.target.value)[0];if(f)selectTown(f);}else if(e.key==='Escape')$('suggest').style.display='none'});document.addEventListener('pointerdown',e=>{if(!e.target.closest('.search'))$('suggest').style.display='none'});loadMunicipalities();}
-    start();
-  })();
-  </script>
-</body>
-</html>
+<div class="shell">
+<header class="header"><div class="identity"><div class="symbol">NJ</div><div><strong>NJ STEM Opportunity Atlas</strong><small>New Jersey education research · District explorer</small></div></div><div class="toolbar"><button class="btn btn-secondary" id="downloadTemplate">↓ CSV template</button><button class="btn btn-primary" id="uploadButton">↑ Update research data</button><input id="fileUpload" type="file" accept=".csv,.json" hidden></div></header>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebarHead"><span class="eyebrow">Explore education data</span><button class="reset" id="reset">Reset</button></div>
+  <div class="section"><label class="fieldLabel" for="year">School year</label><select id="year" class="field"><option value="2024-2025">2024–2025</option></select></div>
+  <div class="section"><label class="fieldLabel" for="metric">Color districts by</label><select id="metric" class="field"><option value="area">District land area (map reference)</option><option value="ap_math_rate">AP/IB mathematics participation</option><option value="ap_science_rate">AP/IB science participation</option><option value="ap_cs_rate">AP/IB computer science participation</option><option value="stem_teacher_fte">STEM teacher FTE</option><option value="teacher_experience">Average teacher experience</option><option value="teacher_salary">Average teacher salary</option><option value="enrollment">Total enrollment</option><option value="predicted_ap_math_rate">Predicted AP/IB math participation</option></select><p class="hint" id="measureHelp">Real geographic boundary area is shown until research data is uploaded. It is not a STEM participation statistic.</p></div>
+  <div class="section"><label class="fieldLabel" for="layer">School district boundaries</label><select id="layer" class="field"><option value="unified">Unified (K–12) districts</option><option value="secondary">Secondary (high-school) districts</option><option value="elementary">Elementary districts</option></select><p class="hint">New Jersey districts can have overlapping elementary and secondary jurisdictions. Choose a boundary type to explore.</p></div>
+  <div class="section"><label class="fieldLabel" for="county">County</label><select class="field" id="county"><option value="">All counties</option></select></div>
+  <div class="section"><label class="fieldLabel">District Factor Group (historical)</label><div class="chips" id="dfgChips"></div><p class="hint">DFG categories reflect historical classifications. Available only when included in the uploaded research data.</p></div>
+  <div class="separator"></div>
+  <div class="section"><label class="fieldLabel" for="search">Search district or code</label><input id="search" class="field" type="search" placeholder="e.g., Freehold, Newark, 1650"></div>
+  <div class="resultCount"><span id="count">Loading districts…</span><span id="dataTag">Official GIS</span></div><div id="districtList" class="districtList"></div>
+  <div class="section"><p class="hint">Map geography: NJ Office of GIS. Research figures will be shown only when backed by imported NJDOE and teacher datasets; missing values are not zero.</p></div>
+</aside>
+<div class="mapWrap"><div class="map" id="map" role="application" aria-label="Interactive map of New Jersey school districts"></div><div class="mapHeading"><strong id="mapTitle">New Jersey school districts</strong><small id="mapSubtitle">Geographic context · Click a district to explore</small></div><div id="notice" class="mapNotice"></div>
+<div class="legend"><strong id="legendTitle">District area</strong><small id="legendSubtitle">Square miles · Geographical context only</small><div class="bar" id="legendBar"></div><div class="ticks"><span id="legendMin">Smaller</span><span id="legendMax">Larger</span></div><div class="noDataSwatch"><i></i><span id="legendMissing">Missing / unavailable</span></div></div>
+<aside class="profile" id="profile"><div class="profileHead" id="profileHead"></div><button class="profileClose" id="closeProfile" aria-label="Close district profile">×</button><div class="profileScroll" id="profileBody"></div></aside><div id="busy" class="busy"><span class="spinner"></span><span id="busyText">Loading official New Jersey district boundaries…</span></div><div class="credit">Geography: NJOGIS · Basemap: OpenStreetMap</div></div>
+</div></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&quot;'}[c])),b=[ [38.87,-75.7],[41.45,-73.75] ];
+const SOURCES={unified:'https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/School_Districts___Unified/FeatureServer/0/query',secondary:'https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/School_Districts___Secondary/FeatureServer/0/query',elementary:'https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/arcgis/rest/services/School_Districts___Elementary/FeatureServer/0/query'};
+const stateBoundary='https://maps.nj.gov/arcgis/rest/services/Framework/Government_Boundaries/MapServer/0/query';
+const M={area:['District area','Square miles','mi²'],ap_math_rate:['AP/IB mathematics participation','Participation (%)','%'],ap_science_rate:['AP/IB science participation','Participation (%)','%'],ap_cs_rate:['AP/IB computer science participation','Participation (%)','%'],stem_teacher_fte:['STEM teacher FTE','FTE','FTE'],teacher_experience:['Average teacher experience','Years','years'],teacher_salary:['Average teacher salary','USD','$'],enrollment:['Total enrollment','Students','students'],predicted_ap_math_rate:['Predicted AP/IB mathematics participation','Predicted (%)','%']};
+const RAMP=['#d5efe6','#a5d9c4','#78c0a4','#479b85','#227d70','#075044'];
+const key=s=>String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const state={features:[],polys:null,stateOutline:null,map:null,data:[],rows:new Map(),selected:null,selectedLayer:null,county:"",year:'2024-2025',metric:'area',layer:'unified',filter:'',dfgs:new Set(),schoolMarkers:null,request:0,schoolItems:[]};
+const findProp=(p,...names)=>{const o={};Object.keys(p||{}).forEach(k=>o[key(k)]=p[k]);for(const n of names){if(o[key(n)]!==undefined&&o[key(n)]!==null&&o[key(n)]!=='')return o[key(n)];}return null};
+function nameOf(f){return String(findProp(f.properties,'DIST_NAME','NAME','district_name','district')||'Unknown school district')}
+function codeOf(f){return String(findProp(f.properties,'NJDOE_ID_U','NJDOEID','UNSDLEA','GEOID','district_code')||'')}
+function areaOf(f){const n=Number(findProp(f.properties,'Shape__Area','Shape_Area','ShapeArea'));return Number.isFinite(n)&&n>0?n/27878400:null}
+function numeric(v){if(v===null||v===undefined||v===''||v==='*'||v==='N/A'||v==='-')return null;const n=Number(String(v).replace(/[$,% ]/g,''));return Number.isFinite(n)?n:null}
+function lookup(f,year=state.year){const id=key(codeOf(f)),name=key(nameOf(f));let r=state.data.find(x=>x.year===year && ((x.id&&id&&x.id===id)||(x.name&&x.name===name)));return r||null}
+function valueOf(f){return state.metric==='area'?areaOf(f):numeric(lookup(f)?.[state.metric])}
+function activeFilters(){return state.dfgs.size>0}
+function passes(f){const search=key(state.filter),code=key(codeOf(f)),match=!search||key(nameOf(f)).includes(search)||code.includes(search);const dfg=lookup(f)?.dfg;return match&&(!state.county||(lookup(f)?.county||'').toLowerCase()===state.county.toLowerCase())&&(!activeFilters()||(dfg&&state.dfgs.has(dfg)))}
+function colors(){const values=state.features.map(valueOf).filter(v=>v!==null);if(!values.length)return [0,1];values.sort((a,b)=>a-b);const i=t=>values[Math.min(values.length-1,Math.floor((values.length-1)*t))];return [i(.02),i(.98)]}
+function shade(f,lim){const v=valueOf(f);if(v===null)return '#d7e1dc';const t=Math.min(1,Math.max(0,(v-lim[0])/Math.max(.000001,lim[1]-lim[0])));return RAMP[Math.min(5,Math.floor(t*6))]}
+function paint(){if(!state.polys)return;const lim=colors();state.polys.eachLayer(layer=>{const f=layer.feature,sel=state.selected===f,visible=passes(f);layer.setStyle({color:sel?'#e4a548':'#fff',weight:sel?3:.8,fillColor:shade(f,lim),fillOpacity:visible?.87:.08,opacity:visible?1:.12,interactive:visible});});legend(lim);renderList();}
+function pretty(v,field){if(v===null||v===undefined)return 'No data';const n=numeric(v);if(n===null)return String(v);if(field==='teacher_salary')return '$'+Math.round(n).toLocaleString();if(['ap_math_rate','ap_science_rate','ap_cs_rate','predicted_ap_math_rate'].includes(field))return n.toFixed(1)+'%';if(['teacher_experience','area','stem_teacher_fte'].includes(field))return n.toFixed(1);return Math.round(n).toLocaleString()}
+function legend(lim){const has=state.features.some(f=>valueOf(f)!==null);$('legendTitle').textContent=M[state.metric][0];$('legendSubtitle').textContent=state.metric==='area'?'Square miles · actual GIS polygon area':`Academic year ${state.year} · ${M[state.metric][1]}`;$('legendMin').textContent=has?pretty(lim[0],state.metric):'No values';$('legendMax').textContent=has?pretty(lim[1],state.metric):'Data needed';$('legendBar').style.opacity=has?'1':'.22';$('mapTitle').textContent=M[state.metric][0];$('mapSubtitle').textContent=state.metric==='area'?'Real school-district shapes and geography':`${state.year} · Only verified matching values are colored`;$('measureHelp').textContent=state.metric==='area'?'Area is a geographic reference metric, not STEM participation. Select another measure after importing district-year data.':'Districts without a matching verified value are shown in gray. Missing does not mean zero.';const missing=state.features.filter(f=>valueOf(f)===null).length;$('legendMissing').textContent=`No data: ${missing} district footprints`}
+function renderList(){const all=state.features.filter(passes).sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));$('count').textContent=`${all.length} district areas`;$('districtList').innerHTML=all.slice(0,180).map((f,i)=>`<button class="districtItem ${state.selected===f?'active':''}" data-i="${i}"><span><strong>${esc(nameOf(f))}</strong><small>${esc(codeOf(f)||'NJ school district')} · ${state.metric==='area'?'Geographic area':pretty(valueOf(f),state.metric)}</small></span><span>›</span></button>`).join('')||'<p class="districtEmpty">No matching districts. Try another filter.</p>';[...$('districtList').querySelectorAll('[data-i]')].forEach(el=>el.onclick=()=>selectDistrict(all[Number(el.dataset.i)]));}
+function schoolTitle(s){return String(findProp(s.properties,'SCH_NAME','NAME','SCHOOLNAME','School_Name')||'School')}
+function coords(p){return Array.isArray(p?.geometry?.coordinates)?p.geometry.coordinates:null}
+function pointInPoly(point,feature){const g=feature.geometry;const polys=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];function ringHit(r){let inside=false;for(let i=0,j=r.length-1;i<r.length;j=i++){const a=r[i],b=r[j];if((a[1]>point[1])!==(b[1]>point[1])&&point[0]<(b[0]-a[0])*(point[1]-a[1])/(b[1]-a[1])+a[0])inside=!inside}return inside}return polys.some(p=>ringHit(p[0])&&!p.slice(1).some(ringHit))}
+async function query(url,opts={},timeout=25000){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout);try{const res=await fetch(url+'?'+new URLSearchParams(opts),{signal:controller.signal,mode:'cors'});if(!res.ok)throw Error('GIS HTTP '+res.status);const j=await res.json();if(j.error)throw Error(j.error.message||'GIS error');return j}finally{clearTimeout(timer)}}
+const njSchool='https://services2.arcgis.com/XVOqAjTOJ5P6ngMu/ArcGIS/rest/services/School_Point_Locations_of_NJ/FeatureServer/0/query';
+async function loadSchools(f){const seq=++state.request;const panel=$('schools');panel.innerHTML='<p class="emptyText">Loading school locations for this district…</p>';const bounds=L.geoJSON(f).getBounds();const q={where:'CATEGORY IN (1,3)',geometry:bounds.toBBoxString(),geometryType:'esriGeometryEnvelope',inSR:'4326',spatialRel:'esriSpatialRelIntersects',outFields:'*',outSR:'4326',returnGeometry:'true',f:'geojson'};try{const j=await query(njSchool,q,18000);if(seq!==state.request)return;let items=(j.features||[]).filter(s=>coords(s)&&pointInPoly(coords(s),f));state.schoolItems=items;state.schoolMarkers.clearLayers();items.forEach((s,i)=>{const xy=coords(s);const pin=L.marker([xy[1],xy[0]],{icon:L.divIcon({className:'',html:'<span class="schoolDot">⌂</span>',iconSize:[24,24],iconAnchor:[12,12]})}).addTo(state.schoolMarkers);pin.bindTooltip(esc(schoolTitle(s)));pin.on('click',()=>schoolDetail(s));});panel.innerHTML=items.length?items.slice(0,100).map((s,i)=>`<button class="schoolButton" data-school="${i}"><span><strong>${esc(schoolTitle(s))}</strong><small>${esc(findProp(s.properties,'DIST_NAME','DISTRICT','CITY')||'NJ public school')}</small></span><span>›</span></button>`).join(''):'<p class="emptyText">No individual school locations were returned for this district. School boundaries may cross municipality lines.</p>';panel.querySelectorAll('[data-school]').forEach(el=>el.onclick=()=>schoolDetail(items[+el.dataset.school]));}catch(e){if(seq===state.request)panel.innerHTML='<p class="emptyText">School-location service unavailable. District boundaries and any imported data are still accessible.</p>';}}
+function schoolDetail(s){const p=s.properties||{},xy=coords(s);$('profileHead').innerHTML=`<span class="eyebrow">Individual school</span><h2>${esc(schoolTitle(s))}</h2><small>${esc(findProp(p,'CITY','DIST_NAME','DISTRICT')||'New Jersey')}</small>`;$('profileBody').innerHTML=`<button class="btn" id="backToDistrict">← Back to district</button>${row('Address',[findProp(p,'ADDRESS1','ADDRESS','STREET'),findProp(p,'CITY'), 'NJ',findProp(p,'ZIP')].filter(Boolean).join(', '))}${row('School type',findProp(p,'CATEGORY','TYPE')||'Public school location')}<h3 class="sectionHeading">Advanced STEM information</h3><p class="emptyText">School-level AP/IB results are not yet loaded. District-level data is not being presented as if it were measured at this individual school.</p>`;$('backToDistrict').onclick=()=>selectDistrict(state.selected,false);if(xy)state.map.flyTo([xy[1],xy[0]],Math.max(state.map.getZoom(),12),{duration:.6});}
+function row(label,v){return `<div class="pair"><span>${esc(label)}</span><b>${esc(v===null||v===undefined||v===''?'No data':v)}</b></div>`}
+function trendSVG(f){const xs=state.data.filter(r=>r.id===key(codeOf(f))||r.name===key(nameOf(f))).map(r=>({year:r.year,value:numeric(r[state.metric])})).filter(r=>r.value!==null).sort((a,b)=>a.year.localeCompare(b.year));if(xs.length<2)return '<p class="emptyText">Year-by-year trend will appear after two or more comparable years are imported.</p>';const lo=Math.min(...xs.map(x=>x.value)),hi=Math.max(...xs.map(x=>x.value)),range=Math.max(hi-lo,.01),coords=xs.map((r,i)=>`${16+i/(xs.length-1)*280},${84-(r.value-lo)/range*56}`).join(' ');return `<svg class="trendSvg" viewBox="0 0 312 110" aria-label="District trend"><polyline points="${coords}" stroke="#0e6b60" stroke-width="2.6" fill="none"/>${xs.map((r,i)=>`<circle cx="${16+i/(xs.length-1)*280}" cy="${84-(r.value-lo)/range*56}" r="3.5" fill="#0e6b60"/>`).join('')}<text x="12" y="104" font-size="10" fill="#798e85">${esc(xs[0].year)}</text><text x="240" y="104" font-size="10" fill="#798e85">${esc(xs.at(-1).year)}</text></svg>`}
+function selectDistrict(f,zoom=true){if(!f)return;state.request++;state.selected=f;const r=lookup(f),v=valueOf(f);$('profile').classList.add('visible');$('profileHead').innerHTML=`<span class="eyebrow">District profile · ${esc(state.year)}</span><h2>${esc(nameOf(f))}</h2><small>Official district footprint · Code ${esc(codeOf(f)||'not available')}</small>`;$('profileBody').innerHTML=`<div class="metricHero"><small>${esc(M[state.metric][0])}</small><strong>${esc(pretty(v,state.metric))}${state.metric==='area'&&v!==null?' mi²':''}</strong></div>${row('District code',codeOf(f)||'Not reported')}${row('Historic DFG',r?.dfg||'No matching data')}${row('AP/IB mathematics participation',r?pretty(r.ap_math_rate,'ap_math_rate'):'No data')}${row('AP/IB science participation',r?pretty(r.ap_science_rate,'ap_science_rate'):'No data')}${row('STEM teacher FTE',r?pretty(r.stem_teacher_fte,'stem_teacher_fte'):'No data')}${row('Average teacher experience',r?pretty(r.teacher_experience,'teacher_experience'):'No data')}${row('Teacher salary',r?pretty(r.teacher_salary,'teacher_salary'):'No data')}<h3 class="sectionHeading">District trend</h3>${trendSVG(f)}<h3 class="sectionHeading">Explore individual schools</h3><div id="schools"></div><h3 class="sectionHeading">Sources and interpretation</h3><p class="emptyText">Boundaries: NJOGIS. Student, workforce and prediction figures appear only from imported, matched records. NJ districts may have overlapping school jurisdictions.</p>`;paint();let layer=null;state.polys?.eachLayer(l=>{if(l.feature===f)layer=l});if(layer){layer.bringToFront();if(zoom)state.map.flyToBounds(layer.getBounds().pad(.34),{duration:.65,maxZoom:11});}loadSchools(f)}
+function closeProfile(){state.request++;$('profile').classList.remove('visible');state.selected=null;state.schoolMarkers.clearLayers();paint();}
+function reset(){closeProfile();$('search').value='';state.filter='';state.county='';$('county').value='';state.dfgs.clear();$('dfgChips').querySelectorAll('button').forEach(b=>b.classList.remove('active'));state.map.fitBounds(b,{padding:[25,25],animate:true});paint()}
+function listDFG(){const defs=['A','B','CD','DE','FG','GH','I','J','No DFG'];$('dfgChips').innerHTML=defs.map(x=>`<button class="chip" data-dfg="${x}">${x}</button>`).join('');$('dfgChips').querySelectorAll('button').forEach(el=>el.onclick=()=>{if(!state.data.length){notice('Import a district-year dataset to filter by historic DFG categories.');return;}const d=el.dataset.dfg;if(state.dfgs.has(d))state.dfgs.delete(d);else state.dfgs.add(d);el.classList.toggle('active',state.dfgs.has(d));paint()})}
+function busy(msg,yes){$('busyText').textContent=msg;$('busy').classList.toggle('hidden',!yes)}
+async function loadStateOutline(){try{const j=await query(stateBoundary,{where:'1=1',outFields:'*',outSR:'4326',returnGeometry:'true',geometryPrecision:'3',maxAllowableOffset:'.003',f:'geojson'},18000);if(Array.isArray(j.features)&&j.features.length){state.stateOutline=L.geoJSON(j,{style:{color:'#1f6456',weight:2.2,fill:false,interactive:false}}).addTo(state.map);}}catch(e){console.warn('State outline unavailable:',e)}}
+async function loadBoundaries(){busy('Loading official New Jersey '+state.layer+' school-district boundaries…',true);closeProfile();state.features=[];if(state.polys){state.polys.remove();state.polys=null}const q={where:'1=1',outFields:'*',outSR:'4326',returnGeometry:'true',geometryPrecision:'4',maxAllowableOffset:'.00075',f:'geojson'};try{const j=await query(SOURCES[state.layer],q,30000);if(!Array.isArray(j.features)||j.features.length<40)throw Error('Incomplete district geometry');state.features=j.features.filter(f=>f.geometry);state.polys=L.geoJSON({type:'FeatureCollection',features:state.features},{style:{color:'white',weight:.8,fillOpacity:.85},onEachFeature:(f,l)=>{l.bindTooltip(`<strong>${esc(nameOf(f))}</strong>`,{sticky:true});l.on('click',()=>selectDistrict(f))}}).addTo(state.map);paint();state.map.fitBounds(b,{padding:[25,25],animate:false});setTimeout(()=>state.map.invalidateSize({pan:false}),180);busy('',false);$('dataTag').textContent='NJOGIS'}catch(e){console.warn(e);busy('',false);notice('Official district boundary service is temporarily unavailable. Please refresh later or change the district boundary type.');}}
+function notice(msg){$('notice').textContent=msg;$('notice').classList.add('visible');setTimeout(()=>$('notice').classList.remove('visible'),9000)}
+function parseCSV(s){const out=[];let row=[],col='',q=false;for(let i=0;i<s.length;i++){const c=s[i];if(c==='"'){if(q&&s[i+1]==='"'){col+='"';i++}else q=!q}else if(c===','&&!q){row.push(col);col=''}else if((c==='\n'||c==='\r')&&!q){if(c==='\r'&&s[i+1]==='\n')i++;row.push(col);if(row.some(x=>x!==''))out.push(row);row=[];col=''}else col+=c}row.push(col);if(row.some(x=>x!==''))out.push(row);const headers=out.shift()||[];return out.map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])))}
+function normalizeRows(items){const arr=[];for(const p of items){if(!p||typeof p!=='object')continue;const y=findProp(p,'year','school_year','schoolYear','SY','academic_year');const rawYear=String(y??state.year).replace('–','-').trim();const year=/^\d{4}-\d{2}$/.test(rawYear)?rawYear.slice(0,5)+'20'+rawYear.slice(5):rawYear;const id=key(findProp(p,'district_code','NJDOE_ID_U','njdoeid','districtid','district_id')||'');const name=key(findProp(p,'district_name','district','DIST_NAME','districtname')||'');if(!id&&!name)continue;const row={id,name,year,dfg:String(findProp(p,'dfg','district_factor_group')||'').toUpperCase().trim(),county:String(findProp(p,'county','county_name')||'').trim()};for(const k of Object.keys(M)){if(k==='area')continue;row[k]=numeric(findProp(p,k,k.replaceAll('_',' ')))}arr.push(row)}return arr}
+function updateYears(){const years=[...new Set([state.year,...state.data.map(r=>r.year)])].sort().reverse();$('year').innerHTML=years.map(y=>`<option value="${esc(y)}">${esc(y.replace('-','–'))}</option>`).join('');$('year').value=state.year;}
+function download(text,name,mime){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+$('downloadTemplate').onclick=()=>download('district_code,district_name,year,dfg,enrollment,ap_math_rate,ap_science_rate,ap_cs_rate,stem_teacher_fte,teacher_experience,teacher_salary,predicted_ap_math_rate\n','nj_stem_district_data_template.csv','text/csv');
+$('uploadButton').onclick=()=>$('fileUpload').click();$('fileUpload').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const content=await file.text(),raw=file.name.endsWith('.json')?JSON.parse(content):parseCSV(content);const data=normalizeRows(Array.isArray(raw)?raw:raw.records||[]);if(!data.length)throw Error('No rows with district codes/names found');state.data=data;const counties=[...new Set(data.map(r=>r.county).filter(Boolean))].sort();$('county').innerHTML='<option value="">All counties</option>'+counties.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');state.year=[...new Set(data.map(x=>x.year))].sort().at(-1)||state.year;updateYears();paint();if(state.selected)selectDistrict(state.selected,false);$('dataTag').textContent=`${data.length} records`;notice(`Loaded ${data.length} district-year rows from ${file.name}. Values are displayed only when matched.`)}catch(err){notice('Could not import the data file: '+err.message)}e.target.value=''};
+$('year').onchange=e=>{state.year=e.target.value;paint();if(state.selected)selectDistrict(state.selected,false)};$('metric').onchange=e=>{state.metric=e.target.value;paint();if(state.selected)selectDistrict(state.selected,false)};$('layer').onchange=e=>{state.layer=e.target.value;loadBoundaries()};$('county').onchange=e=>{state.county=e.target.value;paint()};$('search').oninput=e=>{state.filter=e.target.value;paint()};$('reset').onclick=reset;$('closeProfile').onclick=closeProfile;
+function init(){listDFG();state.map=L.map('map',{zoomControl:false,preferCanvas:true,minZoom:6,maxZoom:17,worldCopyJump:false}).fitBounds(b,{padding:[20,20]});L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:17,maxNativeZoom:17,keepBuffer:3}).addTo(state.map);L.control.zoom({position:'topright'}).addTo(state.map);loadStateOutline();state.schoolMarkers=L.layerGroup().addTo(state.map);setTimeout(()=>{state.map.invalidateSize({pan:false});state.map.fitBounds(b,{padding:[20,20],animate:false})},250);loadBoundaries();}
+if(window.L)init();else {busy('',false);notice('The map library could not load. Please check internet access and reload.');}
+})();
+</script>
+</body></html>
